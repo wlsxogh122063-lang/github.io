@@ -89,32 +89,59 @@
 
         /* 모바일 최적화 완벽 적용 */
 @media (max-width: 1024px) {
-    /* 화면 전체의 높이 고정을 해제합니다 */
-    .wrapper, .layout-container, body, html {
+    /* 1. 스크롤 해제 및 세로 배치 (비율 + 스크롤 동시 해결) */
+    html, body, .wrapper, .layout {
+        height: auto !important;
+        overflow-y: auto !important; /* 스크롤 허용 */
+        flex-direction: column !important; /* 가로를 세로로 꺾음 */
+        display: flex !important;
+    }
+
+    /* 2. 상단 이미지 영역 (모바일 화면에 맞춰 적당한 높이로 고정) */
+    .visual-panel, .visual {
+        width: 100% !important;
+        height: 35vh !important; /* 스마트폰 높이의 35%만 차지 */
+        min-height: 250px !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border);
+    }
+
+    /* 3. 하단 옵션 영역 넓이 100% 확장 */
+    .options-panel, .options {
+        width: 100% !important;
         height: auto !important;
         overflow: visible !important;
     }
 
-    /* 좌측 비주얼 패널 높이 조절 */
-    .visual-panel {
-        width: 100% !important;
-        height: 300px !important;
-        position: relative !important;
+    /* 4. 옵션 카드 한 줄로 꽉 차게 변경 */
+    .grid, .card-grid {
+        grid-template-columns: 1fr !important;
     }
 
-    /* 우측 옵션 패널 높이 자동 조절 */
-    .options-panel {
-        width: 100% !important;
-        height: auto !important;
-        position: relative !important;
-    }
-
-    /* 스텝 컨텐츠 영역 스크롤 가능하게 변경 */
-    .step-container {
+    /* 5. 모바일에 맞춰 안쪽 여백 줄이기 */
+    .step-container, .step-content {
+        padding: 30px 20px 150px 20px !important; /* 하단 바에 안 가려지게 여백 넉넉히 */
         height: auto !important;
         overflow: visible !important;
-        padding-bottom: 120px !important;
     }
+
+    /* 6. 모바일 하단 가격/결제 바 (화면 맨 아래에 딱 고정) */
+    .footer-bar, .bottom-nav {
+        position: fixed !important;
+        bottom: 0 !important; 
+        left: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        padding: 15px 20px !important;
+        flex-direction: row !important; /* 가격과 버튼을 양옆으로 배치 */
+        align-items: center !important;
+        z-index: 9999 !important;
+        background: rgba(10, 10, 10, 0.95) !important;
+    }
+
+    /* 모바일용 버튼, 글씨 크기 미세 조정 */
+    .btn, .btn-next { padding: 12px 20px !important; font-size: 13px !important; }
+    .total-price { font-size: 22px !important; }
 }
     </style>
 </head>
