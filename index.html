@@ -2,416 +2,534 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HILKER 1888 - 비스포크 디지털 스튜디오</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HILKER 1888 - 비스포크 스튜디오</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* 제네시스 스타일 프리미엄 다크 테마 */
         :root {
             --gold: #D4AF37; --gold-hover: #e8c552;
             --bg-base: #000000; --bg-panel: #111111; --bg-card: #1a1a1a;
-            --border: #333333; --text-main: #ffffff; --text-sub: #888888;
+            --border: #222222; --text-main: #ffffff; --text-sub: #888888;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background-color: var(--bg-base); color: var(--text-main); font-family: 'Noto Sans KR', sans-serif; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { background-color: var(--bg-base); color: var(--text-main); font-family: 'Noto Sans KR', sans-serif; height: 100vh; overflow: hidden; }
 
-        .wrapper { display: flex; height: 100vh; }
+        .wrapper { display: flex; height: 100vh; width: 100%; }
 
-        /* 좌측: 비주얼 영역 */
+        /* 좌측 비주얼 패널 */
         .visual-panel {
-            width: 50%; background: #050505; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; position: relative;
-            border-right: 1px solid var(--border);
+            width: 45%; background: #050505; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; border-right: 1px solid var(--border);
+            position: relative; padding: 60px; text-align: center;
         }
-        .logo { position: absolute; top: 40px; left: 40px; font-family: 'Playfair Display', serif; color: var(--gold); font-size: 24px; letter-spacing: 3px; }
-        .main-img { width: 85%; border-radius: 4px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); transition: 0.5s; }
-        .img-info { position: absolute; bottom: 100px; color: var(--gold); font-size: 13px; letter-spacing: 2px; }
+        .logo { position: absolute; top: 30px; left: 40px; font-family: 'Playfair Display', serif; color: var(--gold); font-size: 22px; letter-spacing: 3px; }
+        .main-img-container { width: 100%; display: flex; justify-content: center; align-items: center; min-height: 300px; }
+        .main-img { width: 90%; max-height: 45vh; object-fit: contain; transition: 0.5s ease; }
+        .visual-info { margin-top: 40px; max-width: 85%; }
+        .visual-title { color: var(--gold); font-size: 24px; font-weight: 700; margin-bottom: 12px; transition: 0.3s; }
+        .visual-desc { color: #ccc; font-size: 15px; line-height: 1.7; transition: 0.3s; }
 
-        /* 우측: 옵션 영역 */
-        .options-panel { width: 50%; display: flex; flex-direction: column; background: var(--bg-panel); position: relative; }
+        /* 우측 옵션 패널 */
+        .options-panel { width: 55%; background: var(--bg-panel); display: flex; flex-direction: column; position: relative; }
 
-        /* 상단 프로세스 바 */
-        .progress-bar { padding: 40px 60px 20px; border-bottom: 1px solid #222; }
-        .steps { display: flex; justify-content: space-between; position: relative; margin-bottom: 10px; }
-        .steps::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: #333; z-index: 1; }
-        .step-dot { width: 30px; height: 30px; border-radius: 50%; background: #222; border: 1px solid #444; z-index: 2; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: 0.3s; color: #666; }
-        .step-dot.active { background: var(--gold); color: #000; border-color: var(--gold); box-shadow: 0 0 15px rgba(212,175,55,0.3); }
-        .step-dot.done { color: var(--gold); border-color: var(--gold); }
+        /* 상단 네비게이션 */
+        .top-nav { height: 75px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 40px; background: #0a0a0a; z-index: 100; }
+        .nav-list { display: flex; list-style: none; width: 100%; justify-content: space-between; }
+        .nav-item { font-size: 13px; color: #444; cursor: pointer; transition: 0.3s; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        .nav-item span { font-family: 'Playfair Display', serif; font-size: 16px; opacity: 0.5; }
+        .nav-item.active { color: var(--gold); }
+        .nav-item.active span { opacity: 1; }
+        .nav-item.done { color: #eee; }
 
-        /* 단계별 컨텐츠 */
-        .step-container { flex: 1; overflow-y: auto; padding: 40px 60px 120px; }
-        .wizard-step { display: none; animation: fadeIn 0.4s ease-out; }
-        .wizard-step.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .step-container { flex: 1; overflow-y: auto; padding: 50px 60px 120px; }
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; animation: slideUp 0.4s ease-out forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        h2 { font-size: 26px; font-weight: 500; margin-bottom: 10px; }
-        .desc { font-size: 14px; color: var(--text-sub); margin-bottom: 30px; }
+        h2 { font-size: 28px; font-weight: 500; margin-bottom: 8px; }
+        .step-desc { font-size: 14px; color: var(--text-sub); margin-bottom: 30px; }
 
-        /* 카드 그리드 */
+        /* 카드 UI */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .card { background: var(--bg-card); border: 1px solid var(--border); padding: 25px 20px; border-radius: 4px; cursor: pointer; transition: 0.2s; position: relative; }
+        .card { background: var(--bg-card); border: 1px solid var(--border); padding: 22px; border-radius: 4px; cursor: pointer; position: relative; transition: 0.2s; }
         .card:hover { border-color: #555; }
-        .card.active { border: 2px solid var(--gold); background: rgba(212,175,55,0.03); }
+        .card.active { border: 2px solid var(--gold); background: rgba(212,175,55,0.05); }
         .card.active::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; top: 15px; right: 15px; color: var(--gold); }
-        
-        .card-title { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
+        .card-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
         .card-sub { font-size: 13px; color: var(--text-sub); }
 
-        /* 커스텀 사이즈 입력창 */
-        .bespoke-input { margin-top: 20px; padding: 25px; background: #151515; border: 1px solid #333; display: none; }
-        .bespoke-input.show { display: block; }
-        .input-flex { display: flex; gap: 15px; align-items: center; margin-top: 15px; }
-        input[type="number"] { width: 100%; padding: 12px; background: #000; border: 1px solid #444; color: #fff; outline: none; }
-        input:focus { border-color: var(--gold); }
-
-        /* 다중 선택 폼 & 두께 설정 */
-        .foam-options { margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; display: none; }
-        .card.active .foam-options { display: block; }
-        select { width: 100%; padding: 10px; background: #000; border: 1px solid #444; color: #fff; cursor: pointer; }
+        /* 입력창 및 드롭다운 */
+        .custom-input { display: none; background: #151515; padding: 20px; border: 1px solid #333; margin-top: 15px; border-radius: 4px; }
+        .custom-input.show { display: block; }
+        input[type="number"], select { width: 100%; padding: 12px; background: #000; border: 1px solid #444; color: #fff; outline: none; margin-top: 10px; cursor: pointer; }
+        input:focus, select:focus { border-color: var(--gold); }
 
         /* 하단 바 */
-        .footer-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 100px; background: #0a0a0a; border-top: 1px solid #222; display: flex; justify-content: space-between; align-items: center; padding: 0 60px; }
+        .footer-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 100px; background: #0a0a0a; border-top: 1px solid #222; display: flex; justify-content: space-between; align-items: center; padding: 0 60px; z-index: 150; }
         .total-price { font-size: 32px; font-family: 'Playfair Display', serif; color: var(--gold); font-weight: 600; }
         .btn-group { display: flex; gap: 12px; }
-        .btn { padding: 16px 35px; border-radius: 4px; font-weight: 700; cursor: pointer; border: none; transition: 0.3s; }
+        .btn { padding: 15px 35px; border-radius: 4px; font-weight: 700; cursor: pointer; border: none; transition: 0.3s; }
         .btn-prev { background: transparent; border: 1px solid #444; color: #fff; }
         .btn-next { background: var(--gold); color: #000; }
-        .btn-next:hover { background: var(--gold-hover); }
 
-        /* 리뷰 테이블 */
-        .review-box { background: #151515; padding: 30px; border-radius: 4px; border: 1px solid var(--gold); }
-        .review-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #222; }
-        .row-label { color: var(--text-sub); font-size: 14px; }
-        .row-val { color: #fff; font-weight: 500; }
+        /* 모바일 최적화 */
+        @media (max-width: 1024px) {
+            body { height: auto !important; overflow-y: auto !important; }
+            .wrapper { flex-direction: column !important; height: auto !important; }
+            .visual-panel { width: 100% !important; min-height: 300px !important; border-right: none !important; border-bottom: 1px solid var(--border); padding: 40px 20px !important; }
+            .main-img { max-height: 200px; }
+            .options-panel { width: 100% !important; height: auto !important; }
+            .top-nav { padding: 0 20px; overflow-x: auto; }
+            .nav-list { gap: 20px; justify-content: flex-start; }
+            .nav-item { white-space: nowrap; font-size: 12px; }
+            .step-container { padding: 30px 20px 150px 20px !important; height: auto !important; overflow: visible !important; }
+            .grid { grid-template-columns: 1fr !important; }
+            .footer-bar { position: fixed !important; bottom: 0 !important; height: auto !important; padding: 15px 20px !important; flex-direction: row !important; }
+            .total-price { font-size: 24px; }
+            .btn { padding: 12px 20px; font-size: 13px; }
+            /* 텐션 선택 전용 (1~5단계) */
+.tension-grid { grid-template-columns: repeat(5, 1fr) !important; gap: 8px; }
+.tension-card { padding: 15px 5px !important; text-align: center; }
+.tension-card .card-title { font-size: 18px; margin-bottom: 0; }
+.tension-card .card-sub { font-size: 11px; }
 
-        /* 모바일 최적화 완벽 적용 */
 @media (max-width: 1024px) {
-    /* 1. 스크롤 해제 및 세로 배치 (비율 + 스크롤 동시 해결) */
-    html, body, .wrapper, .layout {
-        height: auto !important;
-        overflow-y: auto !important; /* 스크롤 허용 */
-        flex-direction: column !important; /* 가로를 세로로 꺾음 */
-        display: flex !important;
-    }
-
-    /* 2. 상단 이미지 영역 (모바일 화면에 맞춰 적당한 높이로 고정) */
-    .visual-panel, .visual {
-        width: 100% !important;
-        height: 35vh !important; /* 스마트폰 높이의 35%만 차지 */
-        min-height: 250px !important;
-        border-right: none !important;
-        border-bottom: 1px solid var(--border);
-    }
-
-    /* 3. 하단 옵션 영역 넓이 100% 확장 */
-    .options-panel, .options {
-        width: 100% !important;
-        height: auto !important;
-        overflow: visible !important;
-    }
-
-    /* 4. 옵션 카드 한 줄로 꽉 차게 변경 */
-    .grid, .card-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* 5. 모바일에 맞춰 안쪽 여백 줄이기 */
-    .step-container, .step-content {
-        padding: 30px 20px 150px 20px !important; /* 하단 바에 안 가려지게 여백 넉넉히 */
-        height: auto !important;
-        overflow: visible !important;
-    }
-
-    /* 6. 모바일 하단 가격/결제 바 (화면 맨 아래에 딱 고정) */
-    .footer-bar, .bottom-nav {
-        position: fixed !important;
-        bottom: 0 !important; 
-        left: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        padding: 15px 20px !important;
-        flex-direction: row !important; /* 가격과 버튼을 양옆으로 배치 */
-        align-items: center !important;
-        z-index: 9999 !important;
-        background: rgba(10, 10, 10, 0.95) !important;
-    }
-
-    /* 모바일용 버튼, 글씨 크기 미세 조정 */
-    .btn, .btn-next { padding: 12px 20px !important; font-size: 13px !important; }
-    .total-price { font-size: 22px !important; }
+    .tension-grid { grid-template-columns: repeat(5, 1fr) !important; }
 }
+        }
+        
     </style>
 </head>
-
 <body>
 
     <div class="wrapper">
         <div class="visual-panel">
             <div class="logo">HILKER 1888</div>
-            <img src="https://images.unsplash.com/photo-1632102945041-39c4d9320e8b?q=80&w=800&auto=format&fit=crop" class="main-img" id="product-img">
-            <div class="img-info" id="img-tag">독일 황실의 품격 - EMPIRE COLLECTION</div>
+            <div class="main-img-container">
+                <img src="size_ss.png" class="main-img" id="main-img-display" alt="옵션 이미지">
+            </div>
+            <div class="visual-info">
+                <div class="visual-title" id="visual-title">매트리스 사이즈 선택</div>
+                <div class="visual-desc" id="visual-desc">독일 힐커의 비스포크 스튜디오에 오신 것을 환영합니다. 우측에서 원하시는 사양을 구성해 주십시오.</div>
+            </div>
         </div>
 
         <div class="options-panel">
-            <div class="progress-bar">
-                <div class="steps">
-                    <div class="step-dot active" id="dot1">1</div>
-                    <div class="step-dot" id="dot2">2</div>
-                    <div class="step-dot" id="dot3">3</div>
-                    <div class="step-dot" id="dot4">4</div>
-                    <div class="step-dot" id="dot5"><i class="fa-solid fa-check"></i></div>
-                </div>
-            </div>
+            <nav class="top-nav">
+                <ul class="nav-list">
+    <li class="nav-item active" id="nav-1" onclick="jump(1)"><span>01</span> 사이즈</li>
+    <li class="nav-item" id="nav-2" onclick="jump(2)"><span>02</span> 코어</li>
+    <li class="nav-item" id="nav-3" onclick="jump(3)"><span>03</span> 컴포트</li>
+    <li class="nav-item" id="nav-4" onclick="jump(4)"><span>04</span> 원단</li>
+    <li class="nav-item" id="nav-5" onclick="jump(5)"><span>05</span> 텐션/존</li>
+    <li class="nav-item" id="nav-6" onclick="jump(6)"><span>06</span> 견적</li>
+</ul>
+            </nav>
 
             <div class="step-container">
+                
                 <div class="wizard-step active" id="step1">
-                    <h2>매트리스 사이즈</h2>
-                    <p class="desc">사용자의 환경에 맞는 사이즈를 선택하거나 직접 입력하세요.</p>
+                    <h2>01. 매트리스 규격</h2>
+                    <p class="step-desc">설치 공간과 사용 인원에 최적화된 사이즈를 선택하십시오.</p>
                     <div class="grid">
-                        <div class="card active" data-group="size" data-price="1200000" data-name="슈퍼싱글(SS)" onclick="pick(this)">
-                            <div class="card-title">슈퍼싱글 (SS)</div><div class="card-sub">1100 × 2000 mm</div>
+                        <div class="card active" data-group="size" data-price="1200000" data-name="슈퍼싱글(SS)" data-img="size_ss.png" data-desc="표준 1인 가구 및 자녀방에 적합한 안락한 사이즈입니다." onclick="pick(this)">
+                            <div class="card-title">Super Single (SS)</div><div class="card-sub">1100 × 2000 mm</div>
                         </div>
-                        <div class="card" data-group="size" data-price="1800000" data-name="퀸(Q)" onclick="pick(this)">
-                            <div class="card-title">퀸 (Q)</div><div class="card-sub">1500 × 2000 mm</div>
+                        <div class="card" data-group="size" data-price="1800000" data-name="퀸(Q)" data-img="size_q.png" data-desc="2인 수면에 가장 표준적인 편안함을 제공하는 사이즈입니다." onclick="pick(this)">
+                            <div class="card-title">Queen (Q)</div><div class="card-sub">1500 × 2000 mm</div>
                         </div>
-                        <div class="card" data-group="size" data-price="2200000" data-name="킹(K)" onclick="pick(this)">
-                            <div class="card-title">킹 (K)</div><div class="card-sub">1600 × 2000 mm</div>
+                        <div class="card" data-group="size" data-price="2200000" data-name="킹(K)" data-img="size_k.png" data-desc="옆 사람의 움직임에 방해받지 않는 프리미엄 규격입니다." onclick="pick(this)">
+                            <div class="card-title">King (K)</div><div class="card-sub">1600 × 2000 mm</div>
                         </div>
-                        <div class="card" data-group="size" data-price="2800000" data-name="라지킹(LK)" onclick="pick(this)">
-                            <div class="card-title">라지 킹 (LK)</div><div class="card-sub">1800 × 2000 mm</div>
+                        <div class="card" data-group="size" data-price="2800000" data-name="라지킹(LK)" data-img="size_lk.png" data-desc="가장 넓은 수면 공간을 제공하는 럭셔리 마스터피스 사이즈입니다." onclick="pick(this)">
+                            <div class="card-title">Large King (LK)</div><div class="card-sub">1800 × 2000 mm</div>
                         </div>
-                        <div class="card" id="btn-bespoke" data-group="size" data-price="3000000" data-name="커스텀" onclick="pick(this)">
-                            <div class="card-title">직접 입력 (Bespoke)</div><div class="card-sub">1mm 단위 정밀 제작</div>
-                        </div>
-                    </div>
-                    <div class="bespoke-input" id="bespoke-area">
-                        <span style="font-size:13px; color:var(--gold);">가로/세로 규격을 입력해 주세요.</span>
-                        <div class="input-flex">
-                            <input type="number" id="inp-w" placeholder="가로 (mm)" oninput="calc()">
-                            <input type="number" id="inp-h" placeholder="세로 (mm)" oninput="calc()">
+                        <div class="card" id="trigger-bespoke" data-group="size" data-price="2500000" data-name="커스텀" data-img="size_custom.png" data-desc="프레임에 맞춰 1mm 단위로 정밀하게 맞춤 제작합니다." onclick="pick(this)">
+                            <div class="card-title">Bespoke Custom</div><div class="card-sub">1mm 단위 정밀 제작</div>
                         </div>
                     </div>
+                    <div class="custom-input" id="box-custom"> <div style="display:flex; gap:10px;">
+        <input type="number" id="inp-w" placeholder="가로 폭(mm)" oninput="calc()">
+        <input type="number" id="inp-h" placeholder="세로 길이(mm)" oninput="calc()">
+    </div>
+</div>
                 </div>
 
-                <div class="wizard-step" id="step2">
-                    <h2>코어 베이스 시스템</h2>
-                    <p class="desc">매트리스의 지지력을 결정하는 핵심 코어를 선택합니다.</p>
-                    <div class="grid">
-                        <div class="card active" id="core-spring" data-group="core" data-price="0" data-name="스프링 베이스" onclick="pickCore(this)">
-                            <div class="card-title">스프링 베이스</div><div class="card-sub">독일 Ti-Core™ 기술</div>
-                        </div>
-                        <div class="card" id="core-foam" data-group="core" data-price="200000" data-name="고밀도폼 베이스" onclick="pickCore(this)">
-                            <div class="card-title">고밀도 폼 베이스</div><div class="card-sub">압력 분산형 폼 코어</div>
-                        </div>
-                    </div>
-                    <div id="sub-spring-area" style="display:block; margin-top:30px; border-top:1px solid #222; padding-top:20px;">
-                        <span style="font-size:13px; color:var(--gold); margin-bottom:15px; display:block;">스프링 단수 및 종류</span>
-                        <div class="grid">
-                            <div class="card active" data-group="tier" data-price="0" data-name="1단" onclick="pick(this)">1단 레이어</div>
-                            <div class="card" data-group="tier" data-price="400000" data-name="2단" onclick="pick(this)">2단 (더블)</div>
-                            <div class="card" data-group="tier" data-price="900000" data-name="4단" onclick="pick(this)">4단 (10,000 Springs)</div>
-                            <div class="card active" data-group="stype" data-price="0" data-name="독립포켓" onclick="pick(this)">독립 포켓</div>
-                            <div class="card" data-group="stype" data-price="300000" data-name="티타늄코일" onclick="pick(this)">티타늄 Ti-Core</div>
-                        </div>
-                    </div>
-                </div>
+                
+    <div class="wizard-step" id="step2">
+    <h2>02. 코어 지지 시스템</h2>
+    <p class="step-desc">매트리스의 핵심이 될 메인 소재를 선택하십시오. 힐커의 모든 스프링은 최고급 <strong>티타늄 코일</strong>을 사용하여 전자파 차단과 완벽한 탄성을 제공합니다.</p>
+    
+    <div class="grid" id="core-category">
+        <div class="card" onclick="selectCoreType('spring', this)">
+            <div class="card-title"><i class="fa-solid fa-layer-group"></i> 티타늄 스프링 코어</div>
+            <div class="card-sub">티타늄 합금 강선 / 전자파 차단 / 고탄성 통기성</div>
+        </div>
+        <div class="card" onclick="selectCoreType('foam', this)">
+            <div class="card-title"><i class="fa-solid fa-cube"></i> 프리미엄 폼 코어</div>
+            <div class="card-sub">무소음 / 포근한 밀착감 / 고밀도 압력 분산</div>
+        </div>
+    </div>
+
+    <div id="type-spring" style="display: none; margin-top: 30px; padding-top: 25px; border-top: 1px dashed #333;">
+        
+        <h3 style="font-size: 15px; margin-bottom: 12px; color: var(--gold);">① 스프링 지름 선택</h3>
+        <div class="grid">
+            <div class="card" data-group="지름" data-price="200000" data-name="60mm 초미니 코일" data-img="spring_60.png" data-desc="60mm 초미니 티타늄 코일로 지지점을 극대화하여 촘촘하고 정밀하게 체압을 분산합니다." onclick="pickSpringSub(this, '지름')">
+                <div class="card-title">60mm 초미니 코일</div>
+                <div class="card-sub">지지점 극대화 / 핑거터치 레이어</div>
+            </div>
+            <div class="card" data-group="지름" data-price="0" data-name="120mm 표준 코일" data-img="spring_120.png" data-desc="120mm 표준 티타늄 코일로 대중적이고 안정적이며 탄탄한 복원력을 제공합니다." onclick="pickSpringSub(this, '지름')">
+                <div class="card-title">120mm 표준 코일</div>
+                <div class="card-sub">안정적인 프리미엄 지지력</div>
+            </div>
+        </div>
+
+        <h3 style="font-size: 15px; margin-top: 25px; margin-bottom: 12px; color: var(--gold);">② 스프링 단수(레이어) 선택</h3>
+        <div class="grid">
+            <div class="card" data-group="단수" data-price="0" data-name="1단 기본 코어" data-img="core_1dan.png" data-desc="기본 1단 티타늄 코어 시스템으로 표준적인 신체 정렬을 유지합니다." onclick="pickSpringSub(this, '단수')">
+                <div class="card-title">1단 코어</div>
+                <div class="card-sub">표준 독립스프링 지지층</div>
+            </div>
+            <div class="card" data-group="단수" data-price="450000" data-name="2단 하이브리드" data-img="core_2dan.png" data-desc="코일-온-코일(Coil-on-Coil) 2단 구조로 일반 스프링보다 5배 높은 탄성을 만듭니다." onclick="pickSpringSub(this, '단수')">
+                <div class="card-title">2단 하이브리드</div>
+                <div class="card-sub">HDCoil 복원력 강화 시스템</div>
+            </div>
+            <div class="card" data-group="단수" data-price="900000" data-name="4단 QuadHDCoil" data-img="core_4dan.png" data-desc="최상위 4단 적층 시스템으로 최대 10,000개의 스프링이 독보적인 분산 효과를 구현합니다." onclick="pickSpringSub(this, '단수')">
+                <div class="card-title">4단 QuadHDCoil®</div>
+                <div class="card-sub">최대 10,000 Springs 완성형</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="type-foam" style="display: none; margin-top: 30px; padding-top: 25px; border-top: 1px dashed #333;">
+        <h3 style="font-size: 15px; margin-bottom: 12px; color: var(--gold);">폼 세부 옵션 선택</h3>
+        <div class="grid">
+            <div class="card" data-group="core" data-price="0" data-name="HD Active Base" data-img="core_foam.png" data-desc="고밀도 압력 분산형 폼 베이스입니다. 에어홀 설계를 통해 통풍이 원활합니다." onclick="pick(this)">
+                <div class="card-title">HD Active Base</div><div class="card-sub">기본 통기성 폼 코어</div>
+            </div>
+        </div>
+    </div>
+</div>
 
                 <div class="wizard-step" id="step3">
-                    <h2>상단 컴포트 레이어</h2>
-                    <p class="desc">체크 시 레이어가 추가되며, 두께를 설정할 수 있습니다. (중복 가능)</p>
+                    <h2>03. 컴포트 레이어 적층</h2>
+                    <p class="step-desc">원하는 내장재를 중복으로 선택하고 두께를 조절하여 감도를 맞추십시오.</p>
                     <div class="grid" style="grid-template-columns: 1fr;">
-                        <div class="card multi" data-price="100000" data-name="천연라텍스" onclick="toggleMulti(this, event)">
-                            <div class="card-title">7-Zone 천연 라텍스</div>
-                            <div class="card-sub">단위당 100,000 원</div>
-                            <div class="foam-options">
-                                <select class="thick-val" onchange="calc()">
-                                    <option value="2.5">두께: 2.5 mm</option>
-                                    <option value="3.8">두께: 3.8 mm</option>
-                                    <option value="5.0">두께: 5.0 mm</option>
-                                </select>
-                            </div>
+                        <div class="card multi" data-price="80000" data-name="NASA-Tech 메모리폼" data-img="foam_nasa.png" data-desc="체온과 무게에 반응하여 신체 굴곡을 부드럽게 감싸는 폼입니다." onclick="pickMulti(this)">
+                            <div class="card-title">NASA-Tech Memory Foam</div>
+                            <select class="thick-val" onchange="calc()" onclick="event.stopPropagation()">
+                                <option value="2.5">두께: 2.5 mm</option><option value="3.8">두께: 3.8 mm</option><option value="5.0">두께: 5.0 mm</option>
+                            </select>
                         </div>
-                        <div class="card multi" data-price="80000" data-name="메모리폼" onclick="toggleMulti(this, event)">
-                            <div class="card-title">NASA-Tech 메모리폼</div>
-                            <div class="card-sub">단위당 80,000 원</div>
-                            <div class="foam-options">
-                                <select class="thick-val" onchange="calc()">
-                                    <option value="2.5">두께: 2.5 mm</option>
-                                    <option value="3.8">두께: 3.8 mm</option>
-                                    <option value="5.0">두께: 5.0 mm</option>
-                                </select>
-                            </div>
+                        <div class="card multi" data-price="90000" data-name="Cool-Touch 메모리폼" data-img="foam_cool.png" data-desc="열을 흡수하고 방출하여 과열을 방지하고 밤새 시원한 온도를 유지합니다." onclick="pickMulti(this)">
+                            <div class="card-title">Cool-Touch Memory Foam</div>
+                            <select class="thick-val" onchange="calc()" onclick="event.stopPropagation()">
+                                <option value="2.5">두께: 2.5 mm</option><option value="3.8">두께: 3.8 mm</option><option value="5.0">두께: 5.0 mm</option>
+                            </select>
                         </div>
-                        <div class="card multi" data-price="80000" data-name="메모리폼" onclick="toggleMulti(this, event)">
-                            <div class="card-title">Soft Touch 폼</div>
-                            <div class="card-sub">단위당 80,000 원</div>
-                            <div class="foam-options">
-                                <select class="thick-val" onchange="calc()">
-                                    <option value="2.5">두께: 2.5 mm</option>
-                                    <option value="3.8">두께: 3.8 mm</option>
-                                    <option value="5.0">두께: 5.0 mm</option>
-                                </select>
-                            </div>
+                        <div class="card multi" data-price="70000" data-name="Soft-Touch 메모리폼" data-img="foam_sani.png" data-desc="상단 레이어와 하단 지지층 사이에서 완충 작용을 수행하며, 부드러운 반발력으로 신체의 움직임에 유연하게 대응합니다." onclick="pickMulti(this)">
+                            <div class="card-title">Soft-Touch Memory Foam</div>
+                            <select class="thick-val" onchange="calc()" onclick="event.stopPropagation()">
+                                <option value="2.5">두께: 2.5 mm</option><option value="3.8">두께: 3.8 mm</option><option value="5.0">두께: 5.0 mm</option>
+                            </select>
                         </div>
-                         <div class="card multi" data-price="80000" data-name="메모리폼" onclick="toggleMulti(this, event)">
-                            <div class="card-title">Cool Touch 폼</div>
-                            <div class="card-sub">단위당 80,000 원</div>
-                            <div class="foam-options">
-                                <select class="thick-val" onchange="calc()">
-                                    <option value="2.5">두께: 2.5 mm</option>
-                                    <option value="3.8">두께: 3.8 mm</option>
-                                    <option value="5.0">두께: 5.0 mm</option>
-                                </select>
+                        <div class="card multi" data-price="60000" data-name="comfort 메모리폼" data-img="foam_wave.png" data-desc="신체의 압력을 분산시키고 척추 정렬을 돕는 부드러운 지지력을 제공합니다." onclick="pickMulti(this)">
+                            <div class="card-title">comfort memory foam
                             </div>
+                            <select class="thick-val" onchange="calc()" onclick="event.stopPropagation()">
+                                <option value="2.5">두께: 2.5 mm</option><option value="3.8">두께: 3.8 mm</option><option value="5.0">두께: 5.0 mm</option>
+                            </select>
                         </div>
                     </div>
                 </div>
 
                 <div class="wizard-step" id="step4">
-                    <h2>커버 원단 선택</h2>
-                    <p class="desc">피부에 닿는 최상의 감촉을 선택하세요.</p>
-                    <div class="grid" style="grid-template-columns: 1fr;">
-                        <div class="card active" data-group="fabric" data-price="0" data-name="텐셀원단" onclick="pick(this)">
-                            <div class="card-title">TENCEL™ 텐셀 원단</div><div class="card-sub">기본 제공</div>
-                        </div>
-                        <div class="card" data-group="fabric" data-price="200000" data-name="항균원단" onclick="pick(this)">
-                            <div class="card-title">Sanitized® 독일 항균 원단</div><div class="card-price">+ 200,000 원</div>
-                        </div>
-                        <div class="card" data-group="fabric" data-price="550000" data-name="캐시미어" onclick="pick(this)">
-                            <div class="card-title">비스코스 캐시미어 실크</div><div class="card-price">+ 550,000 원</div>
-                        </div>
+    <h2>04. 패브릭 원단</h2>
+    <p class="step-desc">피부에 직접 닿는 최상단의 원단을 선택하십시오.</p>
+    
+    <div class="grid" style="grid-template-columns: 1fr;">
+        
+        <div class="card active" data-group="fabric" data-price="0" data-name="Viscose Shima" data-img="fabric_shima.png" data-desc="실크처럼 부드러운 촉감의 최고급 비스코스 원단으로, 피부 저자극 케어와 함께 수면 중 발생하는 열을 빠르게 배출하여 쾌적한 온도를 유지합니다." onclick="pick(this)">
+            <div class="card-title">Viscose Shima Fabric</div>
+            <div class="card-sub">피부 저자극 케어 & 열 배출</div>
+        </div>
+
+        <div class="card" data-group="fabric" data-price="0" data-name="Viscose Porous" data-img="fabric_porous.png" data-desc="항균 기능이 강화된 다공성 비스코스 원단으로, 우수한 통기성을 통해 세균 번식을 억제하고 피부에 닿는 촉감을 항상 보송보송하게 유지합니다." onclick="pick(this)">
+            <div class="card-title">Viscose Porous Fabric</div>
+            <div class="card-sub">다공성 항균 & 보송한 촉감 유지</div>
+        </div>
+
+        <div class="card" data-group="fabric" data-price="0" data-name="Viscose Tencel" data-img="fabric_tencel.png" data-desc="유칼립투스 추출물 기반의 친환경 텐셀 원단으로 자극이 적어 민감한 피부에 안전하며, 뛰어난 수분 조절 능력으로 쾌적한 수면 환경을 선사합니다." onclick="pick(this)">
+            <div class="card-title">Viscose Tencel Fabric</div>
+            <div class="card-sub">친환경 텐셀 베이스 & 수분 조절</div>
+        </div>
+
+        <div class="card" data-group="fabric" data-price="0" data-name="Viscose Firstex" data-img="fabric_firstex.png" data-desc="흡습성과 통기성이 뛰어난 비스코스 원단을 사용하여 땀 흡수가 빠르며, 세균 증식을 억제하는 항균 처리로 사계절 내내 청결한 사용이 가능합니다." onclick="pick(this)">
+            <div class="card-title">Viscose Firstex Fabric</div>
+            <div class="card-sub">뛰어난 흡습성 & 사계절 청결 항균</div>
+        </div>
+
+        <div class="card" data-group="fabric" data-price="0" data-name="Sanitized 원단" data-img="fabric_sani.png" data-desc="항균처리 되어 박테리아, 곰팡이, 정전기 등으로부터 신체를 보호합니다." onclick="pick(this)">
+            <div class="card-title">Sanitized® 원단</div>
+            <div class="card-sub">박테리아, 곰팡이, 정전기 완벽 보호</div>
+        </div>
+
+    </div>
+</div>
+<div class="wizard-step" id="step5">
+    <h2>05. 텐션 & 압력 분산 시스템</h2>
+    <p class="step-desc">매트리스의 전체적인 경도와 압력 분산 범위를 설정하십시오.</p>
+    
+    <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--gold);">매트리스 전체 텐션감 (1: Hard ~ 5: Soft)</h3>
+    <div class="grid tension-grid">
+        <div class="card tension-card active" data-group="tension" data-price="0" data-name="텐션: 1단계" data-img="tension_1.png" data-desc="가장 단단한 지지력을 선사하는 하드 타입입니다." onclick="pickSub(this, 'tension')">
+            <div class="card-title">1</div><div class="card-sub">Hard</div>
+        </div>
+        <div class="card tension-card" data-group="tension" data-price="0" data-name="텐션: 2단계" data-img="tension_2.png" data-desc="적당한 단단함으로 척추를 받쳐줍니다." onclick="pickSub(this, 'tension')">
+            <div class="card-title">2</div><div class="card-sub">M-H</div>
+        </div>
+        <div class="card tension-card" data-group="tension" data-price="0" data-name="텐션: 3단계" data-img="tension_3.png" data-desc="가장 표준적인 미디엄 타입입니다." onclick="pickSub(this, 'tension')">
+            <div class="card-title">3</div><div class="card-sub">Med</div>
+        </div>
+        <div class="card tension-card" data-group="tension" data-price="0" data-name="텐션: 4단계" data-img="tension_4.png" data-desc="부드러운 쿠션감의 미디엄 소프트 타입입니다." onclick="pickSub(this, 'tension')">
+            <div class="card-title">4</div><div class="card-sub">M-S</div>
+        </div>
+        <div class="card tension-card" data-group="tension" data-price="0" data-name="텐션: 5단계" data-img="tension_5.png" data-desc="극상의 포근함을 제공하는 소프트 타입입니다." onclick="pickSub(this, 'tension')">
+            <div class="card-title">5</div><div class="card-sub">Soft</div>
+        </div>
+    </div>
+
+    <h3 style="font-size: 14px; margin-top: 25px; margin-bottom: 12px; color: var(--gold);">압력 분산 존 시스템 (Zoning)</h3>
+    <div class="grid">
+        <div class="card active" data-group="zone" data-price="0" data-name="5-Zone System" data-img="zone_5.png" data-desc="5개 부위를 체계적으로 지지합니다." onclick="pickSub(this, 'zone')">
+            <div class="card-title">5-Zone System</div><div class="card-sub">표준 인체공학 지지</div>
+        </div>
+        <div class="card" data-group="zone" data-price="350000" data-name="7-Zone System" data-img="zone_7.png" data-desc="7개의 구역으로 나누어 미세한 하중 변화까지 흡수합니다." onclick="pickSub(this, 'zone')">
+            <div class="card-title">7-Zone System</div><div class="card-sub">프리미엄 정밀 지지</div>
+        </div>
+    </div>
+</div>
+                <div class="wizard-step" id="step6">
+                    <h2>06. 비스포크 견적 요약</h2>
+                    <p class="step-desc">고객님만의 매트리스 사양이 완성되었습니다.</p>
+                    <div style="background: #151515; padding: 35px; border: 1px solid var(--gold); border-radius: 4px;">
+                        <h3 style="color: var(--gold); font-family: 'Playfair Display', serif; margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 10px;">HILKER MASTERPIECE</h3>
+                        <div style="color:#ddd; line-height:2.4; font-size:16px;" id="final-summary"></div>
                     </div>
+                    <p style="color: #888; font-size: 13px; margin-top: 15px; text-align: right;">* 견적 금액은 실제 금액과 다를 수 있습니다.</p>
                 </div>
 
-                <div class="wizard-step" id="step5">
-                    <h2>최종 견적 확인</h2>
-                    <p class="desc">선택하신 힐커 비스포크 사양을 확인해 주세요.</p>
-                    <div class="review-box">
-                        <div class="review-row"><span class="row-label">사이즈</span><span class="row-val" id="rev-size">-</span></div>
-                        <div class="review-row"><span class="row-label">코어 시스템</span><span class="row-val" id="rev-core">-</span></div>
-                        <div class="review-row"><span class="row-label">내장재 구성</span><span class="row-val" id="rev-foam">-</span></div>
-                        <div class="review-row"><span class="row-label">커버 원단</span><span class="row-val" id="rev-fabric">-</span></div>
-                    </div>
-                </div>
             </div>
 
             <div class="footer-bar">
-                <div class="price-info">
-                    <div style="font-size:12px; color:var(--text-sub); margin-bottom:5px;">ESTIMATED PRICE</div>
-                    <div class="total-price">￦ <span id="out-total">0</span></div>
+                <div>
+                    <div style="font-size:11px; color:var(--text-sub); letter-spacing:1px; margin-bottom:5px;">ESTIMATED TOTAL</div>
+                    <div class="total-price">￦ <span id="out-total">1,200,000</span></div>
                 </div>
                 <div class="btn-group">
-                    <button class="btn btn-prev" id="btn-prev" style="display:none;" onclick="move(-1)">PREV</button>
-                    <button class="btn btn-next" id="btn-next" onclick="move(1)">NEXT</button>
+                    <button class="btn btn-prev" id="btn-prev" style="display:none;" onclick="move(-1)">이전</button>
+                    <button class="btn btn-next" id="btn-next" onclick="move(1)">다음</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let step = 1;
+        let currentStep = 1;
+        let targetPrice = 1200000;
+        let displayPrice = 1200000;
 
-        // 1. 일반 선택 (사이즈, 단수, 원단 등)
+        // 가격 애니메이션
+        function animatePrice() {
+            const diff = targetPrice - displayPrice;
+            if (Math.abs(diff) > 10) {
+                displayPrice += diff * 0.15;
+                document.getElementById('out-total').innerText = Math.round(displayPrice).toLocaleString();
+                requestAnimationFrame(animatePrice);
+            } else {
+                displayPrice = targetPrice;
+                document.getElementById('out-total').innerText = targetPrice.toLocaleString();
+            }
+        }
+
+        // 단일 옵션 선택
         function pick(el) {
-            const grp = el.getAttribute('data-group');
-            document.querySelectorAll(`.card[data-group="${grp}"]`).forEach(c => c.classList.remove('active'));
+            const group = el.getAttribute('data-group');
+            document.querySelectorAll(`.card[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
             el.classList.add('active');
-            
-            // 베스포크 입력창 제어
-            if(grp === 'size') {
-                document.getElementById('bespoke-area').classList.toggle('show', el.id === 'btn-bespoke');
+
+            if(group === 'size') {
+        const box = document.getElementById('box-custom');
+        // 클릭한 카드의 id가 'trigger-bespoke'일 때만 보이게(show) 만듭니다.
+        if(box) box.classList.toggle('show', el.id === 'trigger-bespoke');
+    }
+
+            if(group === 'size') {
+                document.getElementById('area-bespoke').classList.toggle('show', el.id === 'trigger-bespoke');
+            }
+            updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
+            calc();
+        }
+
+        // 다중 옵션 선택
+        function pickMulti(el) {
+            el.classList.toggle('active');
+            if(el.classList.contains('active')) {
+                updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
             }
             calc();
         }
 
-        // 2. 코어 선택 전용
-        function pickCore(el) {
-            pick(el);
-            document.getElementById('sub-spring-area').style.display = (el.id === 'core-spring') ? 'block' : 'none';
-            calc();
+        // 왼쪽 화면 업데이트
+        function updateVisual(img, title, desc) {
+            const vImg = document.getElementById('main-img-display');
+            const vTitle = document.getElementById('visual-title');
+            const vDesc = document.getElementById('visual-desc');
+
+            vImg.style.opacity = 0;
+            vImg.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                vImg.src = img || 'size_ss.png';
+                vTitle.innerText = title;
+                vDesc.innerText = desc;
+                vImg.style.opacity = 1;
+                vImg.style.transform = 'scale(1)';
+            }, 300);
         }
 
-        // 3. 폼 다중 선택
-        function toggleMulti(el, e) {
-            if (e.target.tagName === 'SELECT' || e.target.tagName === 'OPTION') return;
-            el.classList.toggle('active');
-            calc();
-        }
-
-        // 4. 가격 계산 및 요약 업데이트
+        // 요약 계산
         function calc() {
             let total = 0;
-            let res = { size: "", core: "", foam: [], fabric: "" };
+            let summary = "";
 
-            // 단일 옵션 합산
             document.querySelectorAll('.card.active:not(.multi)').forEach(c => {
-                // 숨겨진 영역 옵션 제외
-                if(c.closest('#sub-spring-area') && document.getElementById('sub-spring-area').style.display === 'none') return;
-                
                 total += parseInt(c.getAttribute('data-price') || 0);
-                
-                // 리뷰 데이터 매핑
-                const g = c.getAttribute('data-group');
-                const n = c.getAttribute('data-name');
-                if(g === 'size') res.size = n;
-                if(g === 'core') res.core = n;
-                if(g === 'tier') res.core += ` (${n}레이어`;
-                if(g === 'stype') res.core += ` + ${n})`;
-                if(g === 'fabric') res.fabric = n;
+                let name = c.getAttribute('data-name');
+                if(c.id === 'trigger-bespoke') {
+                    const w = document.getElementById('inp-w').value || 0;
+                    const h = document.getElementById('inp-h').value || 0;
+                    if(w > 0 && h > 0) {
+                        name = `비스포크 (${w}x${h}mm)`;
+                        total += Math.round((w * h / 1000000) * 150000); 
+                    }
+                }
+                summary += `<div><strong style="color:#888; display:inline-block; width:80px;">${c.getAttribute('data-group').toUpperCase()}:</strong> ${name}</div>`;
             });
 
-            // 직접 입력 사이즈 보정
-            if(document.getElementById('bespoke-area').classList.contains('show')) {
-                const w = document.getElementById('inp-w').value;
-                const h = document.getElementById('inp-h').value;
-                if(w && h) {
-                    res.size = `커스텀 (${w}x${h}mm)`;
-                    // 면적 할증 예시 (기본가격 + 면적당 추가)
-                    total += Math.round((w * h / 1000000) * 200000); 
-                }
-            }
-
-            // 다중 폼 합산
+            let foams = [];
             document.querySelectorAll('.card.multi.active').forEach(c => {
                 const p = parseInt(c.getAttribute('data-price'));
                 const t = parseFloat(c.querySelector('.thick-val').value);
                 total += (p * t);
-                res.foam.push(`${c.getAttribute('data-name')} ${t}mm`);
+                foams.push(`${c.getAttribute('data-name')} (${t}mm)`);
             });
+            summary += `<div><strong style="color:#888; display:inline-block; width:80px;">FOAM:</strong> ${foams.length > 0 ? foams.join(' + ') : '선택 안 함'}</div>`;
 
-            // 출력
-            document.getElementById('out-total').innerText = total.toLocaleString();
-            
-            // 리뷰 업데이트
-            document.getElementById('rev-size').innerText = res.size;
-            document.getElementById('rev-core').innerText = res.core;
-            document.getElementById('rev-foam').innerText = res.foam.length > 0 ? res.foam.join(' + ') : "선택 안 함";
-            document.getElementById('rev-fabric').innerText = res.fabric;
+            targetPrice = total;
+            animatePrice();
+            document.getElementById('final-summary').innerHTML = summary;
         }
 
-        // 5. 페이지 이동 (Wizard)
-        function move(dir) {
-            document.getElementById(`step${step}`).classList.remove('active');
-            step += dir;
-            if (step < 1) step = 1; if (step > 5) step = 5;
+       // [수정됨] 스텝 이동 및 새 페이지 전환
+function move(dir) {
+    // 6단계에서 '상담 신청하기(다음)' 버튼을 누르면 완전히 다른 페이지로 넘어감
+    if (currentStep === 6 && dir === 1) {
+        // 👇 이동할 새로운 HTML 파일 이름을 적어주세요.
+        window.location.href = "contact.html"; 
+        return;
+    }
+    jump(currentStep + dir); 
+}
 
-            document.getElementById(`step${step}`).classList.add('active');
+// [수정됨] 점프 기능 (최대 6단계 유지)
+function jump(n) {
+    if (n < 1 || n > 6) return; 
+    document.getElementById(`step${currentStep}`).classList.remove('active');
+    currentStep = n;
+    document.getElementById(`step${currentStep}`).classList.add('active');
+    
+    document.getElementById('btn-prev').style.display = (currentStep === 1) ? 'none' : 'block';
+    
+    // 6단계일 때 하단 버튼 이름을 '상담 신청하기'로 변경
+    document.getElementById('btn-next').innerText = (currentStep === 6) ? '상담 신청하기' : '다음';
+    
+    updateNav();
+    window.scrollTo(0,0);
+}
 
-            // UI 업데이트
-            document.getElementById('btn-prev').style.display = (step === 1) ? 'none' : 'block';
-            document.getElementById('btn-next').innerText = (step === 5) ? 'ORDER NOW' : 'NEXT';
-            
-            // 프로그래스 도트
-            for(let i=1; i<=5; i++) {
-                const dot = document.getElementById(`dot${i}`);
-                dot.classList.remove('active', 'done');
-                if(i < step) dot.classList.add('done');
-                if(i === step) dot.classList.add('active');
-            }
+// 상단 네비게이션 (최대 6단계 유지)
+function updateNav() {
+    for(let i=1; i<=6; i++) { 
+        const nav = document.getElementById(`nav-${i}`);
+        if(nav) {
+            nav.classList.remove('active', 'done');
+            if(i < currentStep) nav.classList.add('done');
+            if(i === currentStep) nav.classList.add('active');
         }
+    }
+}
+        // [기능] 코어 1차 대분류(스프링/폼) 선택 시 하위 메뉴 열기
+function selectCoreType(type, el) {
+    // 1. 대분류 카드 활성화 색상 변경
+    document.querySelectorAll('#core-category .card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+
+    // 2. 세부 옵션창 숨기기 및 선택한 것만 열기 (애니메이션 효과 포함)
+    document.getElementById('type-spring').style.display = 'none';
+    document.getElementById('type-foam').style.display = 'none';
+    
+    const targetDiv = document.getElementById('type-' + type);
+    targetDiv.style.display = 'block';
+    targetDiv.style.animation = 'slideUp 0.4s ease-out forwards'; // 스르륵 올라오는 효과
+
+    // 3. 다른 카테고리를 누르면 기존에 선택했던 세부 가격 옵션을 초기화 (오류 방지)
+    document.querySelectorAll('.core-sub-options .card').forEach(c => c.classList.remove('active'));
+    calc(); // 가격을 다시 원상 복구 계산
+}
+// [기능] 코어 대분류(스프링/폼) 제어
+function selectCoreType(type, el) {
+    document.querySelectorAll('#core-category .card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+
+    document.getElementById('type-spring').style.display = 'none';
+    document.getElementById('type-foam').style.display = 'none';
+    
+    document.getElementById('type-' + type).style.display = 'block';
+
+    // 다른 분류를 누르면 기존 하위 세부 선택 전체 초기화
+    document.querySelectorAll('#type-spring .card, #type-foam .card').forEach(c => c.classList.remove('active'));
+    calc(); 
+}
+
+// [신규 기능] 스프링 하위 옵션(지름, 단수) 독립 선택 함수
+function pickSpringSub(el, subgroup) {
+    // 해당 서브그룹(지름 또는 단수) 내에서만 선택 교체
+    document.querySelectorAll(`.card[data-group="${subgroup}"]`).forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    
+    // 왼쪽 넓은 화면에 이미지 및 설명 업데이트
+    updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
+    calc();
+}
+// 텐션 및 존(Zone) 전용 클릭 함수
+function pickSub(el, subgroup) {
+    // 1. 같은 그룹 내의 활성화 상태 모두 해제
+    document.querySelectorAll(`.card[data-group="${subgroup}"]`).forEach(c => c.classList.remove('active'));
+    
+    // 2. 현재 클릭한 카드만 활성화
+    el.classList.add('active');
+    
+    // 3. 왼쪽 이미지 변경 및 견적 다시 계산
+    if(typeof updateVisual === 'function') {
+        updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
+    }
+    calc();
+}
 
         window.onload = calc;
     </script>
