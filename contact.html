@@ -1,0 +1,94 @@
+HTML
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HILKER 1888 - 비스포크 스튜디오 상담 신청</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --gold: #D4AF37; --gold-hover: #e8c552;
+            --bg-base: #000000; --bg-panel: #111111; --bg-card: #1a1a1a;
+            --border: #222222; --text-main: #ffffff; --text-sub: #888888;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { background-color: var(--bg-base); color: var(--text-main); font-family: 'Noto Sans KR', sans-serif; min-height: 100vh; }
+
+        .container { max-width: 600px; margin: 0 auto; padding: 60px 20px 100px; }
+        .logo { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 24px; letter-spacing: 3px; text-align: center; margin-bottom: 40px; }
+        
+        h2 { font-size: 26px; font-weight: 500; margin-bottom: 8px; text-align: center; }
+        .desc { font-size: 14px; color: var(--text-sub); margin-bottom: 40px; text-align: center; }
+
+        .form-box { background: var(--bg-panel); padding: 35px; border: 1px solid var(--border); border-radius: 4px; }
+        .form-group { margin-bottom: 25px; }
+        label { display: block; color: var(--gold); margin-bottom: 8px; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; }
+        
+        input[type="text"], input[type="tel"] { 
+            width: 100%; padding: 14px; background: #000; border: 1px solid #444; 
+            color: #fff; outline: none; transition: 0.3s; border-radius: 4px; font-size: 15px;
+        }
+        input:focus { border-color: var(--gold); }
+
+        .privacy-box { 
+            margin-top: 35px; display: flex; align-items: center; gap: 12px; 
+            background: #0a0a0a; padding: 18px; border-radius: 4px; border: 1px solid var(--border); 
+        }
+        .privacy-box input[type="checkbox"] { width: 20px; height: 20px; margin: 0; cursor: pointer; accent-color: var(--gold); }
+        .privacy-box label { color: #ccc; font-size: 14px; cursor: pointer; margin-bottom: 0; font-weight: 400; }
+
+        .btn-group { display: flex; gap: 15px; margin-top: 40px; }
+        .btn { flex: 1; padding: 16px; border-radius: 4px; font-weight: 700; cursor: pointer; border: none; transition: 0.3s; text-align: center; text-decoration: none; font-size: 15px; }
+        .btn-prev { background: transparent; border: 1px solid #444; color: #fff; }
+        .btn-submit { background: var(--gold); color: #000; }
+        .btn-submit:hover { background: var(--gold-hover); }
+
+        @media (max-width: 768px) {
+            .container { padding: 40px 15px 80px; }
+            .form-box { padding: 25px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="logo">HILKER 1888</div>
+        
+        <h2>상담 정보 입력</h2>
+        <p class="desc">정확한 맞춤 제작 및 안내를 위해 고객님의 정보를 입력해 주십시오.</p>
+        
+        <form action="https://api.sheetmonkey.io/form/f3eHUQzLcxELGsoeFQCoCq" method="POST" class="form-box">
+            <div class="form-group">
+                <label>성함 (Name)</label>
+                <input type="text" name="name" required placeholder="예: 홍길동">
+            </div>
+            
+            <div class="form-group">
+                <label>연락처 (Phone)</label>
+                <input type="tel" name="phone" required placeholder="예: 010-1234-5678">
+            </div>
+            
+            <div class="form-group">
+                <label>배송 지역 (Region)</label>
+                <input type="text" name="region" required placeholder="예: 서울특별시 강남구">
+            </div>
+            
+            <div class="privacy-box">
+                <input type="checkbox" id="agree-privacy" required>
+                <label for="agree-privacy">[필수] 개인정보 수집 및 이용에 동의합니다.</label>
+            </div>
+
+            <div class="btn-group">
+                <a href="index.html" class="btn btn-prev">이전 단계</a>
+                <button type="submit" class="btn btn-submit">상담 신청 완료</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
