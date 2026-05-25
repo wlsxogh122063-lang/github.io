@@ -101,7 +101,13 @@
     .tension-grid { grid-template-columns: repeat(5, 1fr) !important; }
 }
         }
-        
+        html, body {
+    height: auto !important; 
+    min-height: 100vh !important; 
+    overflow-x: hidden !important; 
+    overflow-y: auto !important; 
+    -webkit-overflow-scrolling: touch; /* 모바일 터치 스크롤 부드럽게 */
+}
     </style>
 </head>
 <body>
@@ -339,199 +345,228 @@
         </div>
     </div>
 
-    <script>
-        let currentStep = 1;
-        let targetPrice = 1200000;
-        let displayPrice = 1200000;
+<script>
+    // ----------------------------------------------------------------
+    // 1. 기본 설정 변수
+    // ----------------------------------------------------------------
+    let currentStep = 1;
+    let targetPrice = 1200000;
+    let displayPrice = 1200000;
 
-        // 가격 애니메이션
-        function animatePrice() {
-            const diff = targetPrice - displayPrice;
-            if (Math.abs(diff) > 10) {
-                displayPrice += diff * 0.15;
-                document.getElementById('out-total').innerText = Math.round(displayPrice).toLocaleString();
-                requestAnimationFrame(animatePrice);
-            } else {
-                displayPrice = targetPrice;
-                document.getElementById('out-total').innerText = targetPrice.toLocaleString();
-            }
+    // ----------------------------------------------------------------
+    // 2. 화면 이동 및 네비게이션 제어
+    // ----------------------------------------------------------------
+    function move(dir) {
+        // 6단계에서 '다음(상담신청)' 버튼 클릭 시 연락처 폼 페이지로 이동
+        if (currentStep === 6 && dir === 1) {
+            window.location.href = "contact.html"; 
+            return;
         }
-
-        // 단일 옵션 선택
-        function pick(el) {
-            const group = el.getAttribute('data-group');
-            document.querySelectorAll(`.card[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-
-            if(group === 'size') {
-        const box = document.getElementById('box-custom');
-        // 클릭한 카드의 id가 'trigger-bespoke'일 때만 보이게(show) 만듭니다.
-        if(box) box.classList.toggle('show', el.id === 'trigger-bespoke');
+        jump(currentStep + dir); 
     }
 
-            if(group === 'size') {
-                document.getElementById('area-bespoke').classList.toggle('show', el.id === 'trigger-bespoke');
+    function jump(n) {
+        if (n < 1 || n > 6) return; 
+        
+        document.getElementById(`step${currentStep}`).classList.remove('active');
+        currentStep = n;
+        document.getElementById(`step${currentStep}`).classList.add('active');
+        
+        // 1단계에서는 이전 버튼 숨김
+        const btnPrev = document.getElementById('btn-prev');
+        if(btnPrev) btnPrev.style.display = (currentStep === 1) ? 'none' : 'block';
+        
+        // 6단계일 때 하단 버튼 이름을 '상담 신청하기'로 변경
+        const btnNext = document.getElementById('btn-next');
+        if(btnNext) btnNext.innerText = (currentStep === 6) ? '상담 신청하기' : '다음';
+        
+        updateNav();
+        window.scrollTo(0,0);
+    }
+
+    function updateNav() {
+        for(let i=1; i<=6; i++) { 
+            const nav = document.getElementById(`nav-${i}`);
+            if(nav) {
+                nav.classList.remove('active', 'done');
+                if(i < currentStep) nav.classList.add('done');
+                if(i === currentStep) nav.classList.add('active');
             }
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // 3. 코어(대분류) 선택 및 가격 애니메이션
+    // ----------------------------------------------------------------
+    function animatePrice() {
+        const diff = targetPrice - displayPrice;
+        if (Math.abs(diff) > 10) {
+            displayPrice += diff * 0.15;
+            const outTotal = document.getElementById('out-total');
+            if(outTotal) outTotal.innerText = Math.round(displayPrice).toLocaleString();
+            requestAnimationFrame(animatePrice);
+        } else {
+            displayPrice = targetPrice;
+            const outTotal = document.getElementById('out-total');
+            if(outTotal) outTotal.innerText = targetPrice.toLocaleString();
+        }
+    }
+
+    function selectCoreType(type, el) {
+        // 추천 시스템용 코어 데이터 저장
+        localStorage.setItem('userCore', type);
+
+        // 상단 탭 활성화 변경
+        document.querySelectorAll('#core-category .card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+
+        // 하위 섹션(스프링/폼) 전환
+        const springDiv = document.getElementById('type-spring');
+        const foamDiv = document.getElementById('type-foam');
+        if(springDiv) springDiv.style.display = 'none';
+        if(foamDiv) foamDiv.style.display = 'none';
+        
+        const targetDiv = document.getElementById('type-' + type);
+        if(targetDiv) {
+            targetDiv.style.display = 'block';
+            targetDiv.style.animation = 'slideUp 0.4s ease-out forwards'; 
+        }
+
+        // 다른 탭으로 넘어갈 때 선택된 기존 하위 옵션 초기화
+        document.querySelectorAll('#type-spring .card, #type-foam .card, .core-sub-options .card').forEach(c => c.classList.remove('active'));
+        calc(); 
+    }
+
+    // ----------------------------------------------------------------
+    // 4. 세부 옵션 선택 (단일 및 다중 선택 완벽 통합)
+    // ----------------------------------------------------------------
+    
+    // 통합형 단일 옵션 선택 함수 (pick, pickSub, pickSpringSub 모두 호환)
+    function pick(el, subgroupParam) {
+        // 태그에 적힌 data-group 속성을 우선적으로 찾음
+        const group = subgroupParam || el.getAttribute('data-group');
+
+        // 1. 같은 그룹 내 카드 비활성화 후 현재 클릭한 카드만 활성화
+        if (group) {
+            document.querySelectorAll(`.card[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
+        } else {
+            // 그룹이 명시되지 않은 단순 카드일 경우 형제 요소들 비활성화
+            const siblings = el.parentElement.querySelectorAll('.card');
+            siblings.forEach(c => c.classList.remove('active'));
+        }
+        el.classList.add('active');
+
+        // 2. 추천 시스템용 데이터 추출 및 브라우저 저장
+        const titleEl = el.querySelector('.card-title');
+        const selectedText = titleEl ? titleEl.innerText : (el.getAttribute('data-name') || el.innerText);
+
+        if (group === 'tension') localStorage.setItem('userTension', selectedText);
+        if (group === 'size') localStorage.setItem('userSize', selectedText);
+        if (group === 'zone') localStorage.setItem('userZone', selectedText);
+        if (group === 'inner' || group === '내장재') localStorage.setItem('userInner', selectedText);
+        if (group === 'fabric' || group === '원단') localStorage.setItem('userFabric', selectedText);
+
+        // 3. 사이즈가 '비스포크'일 경우 가로세로 입력창(area-bespoke, box-custom) 띄우기
+        if (group === 'size') {
+            const isBespoke = (el.id === 'trigger-bespoke');
+            const boxCustom = document.getElementById('box-custom');
+            const areaBespoke = document.getElementById('area-bespoke');
+            
+            if(boxCustom) boxCustom.classList.toggle('show', isBespoke);
+            if(areaBespoke) areaBespoke.classList.toggle('show', isBespoke);
+        }
+
+        // 4. 왼쪽 큰 이미지 갱신 및 총 견적/요약본 재생산
+        updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
+        calc();
+    }
+
+    // 기존 HTML 태그들(onclick="pickSub(...)")에서 에러가 나지 않도록 연결해두는 브릿지 역할
+    function pickSub(el, subgroup) { pick(el, subgroup); }
+    function pickSpringSub(el, subgroup) { pick(el, subgroup); }
+
+    // 다중 옵션 선택 (폼 등)
+    function pickMulti(el) {
+        el.classList.toggle('active');
+        if(el.classList.contains('active')) {
             updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
-            calc();
         }
+        calc();
+    }
 
-        // 다중 옵션 선택
-        function pickMulti(el) {
-            el.classList.toggle('active');
-            if(el.classList.contains('active')) {
-                updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
-            }
-            calc();
-        }
+    // ----------------------------------------------------------------
+    // 5. 시각 요소 업데이트 및 총 금액/요약 계산
+    // ----------------------------------------------------------------
+    function updateVisual(img, title, desc) {
+        const vImg = document.getElementById('main-img-display');
+        const vTitle = document.getElementById('visual-title');
+        const vDesc = document.getElementById('visual-desc');
 
-        // 왼쪽 화면 업데이트
-        function updateVisual(img, title, desc) {
-            const vImg = document.getElementById('main-img-display');
-            const vTitle = document.getElementById('visual-title');
-            const vDesc = document.getElementById('visual-desc');
-
+        if(vImg) {
             vImg.style.opacity = 0;
             vImg.style.transform = 'scale(0.95)';
             setTimeout(() => {
                 vImg.src = img || 'size_ss.png';
-                vTitle.innerText = title;
-                vDesc.innerText = desc;
+                if(vTitle) vTitle.innerText = title || '';
+                if(vDesc) vDesc.innerText = desc || '';
                 vImg.style.opacity = 1;
                 vImg.style.transform = 'scale(1)';
             }, 300);
         }
+    }
 
-        // 요약 계산
-        function calc() {
-            let total = 0;
-            let summary = "";
+    function calc() {
+        let total = 0;
+        let summary = "";
 
-            document.querySelectorAll('.card.active:not(.multi)').forEach(c => {
-                total += parseInt(c.getAttribute('data-price') || 0);
-                let name = c.getAttribute('data-name');
-                if(c.id === 'trigger-bespoke') {
-                    const w = document.getElementById('inp-w').value || 0;
-                    const h = document.getElementById('inp-h').value || 0;
-                    if(w > 0 && h > 0) {
-                        name = `비스포크 (${w}x${h}mm)`;
-                        total += Math.round((w * h / 1000000) * 150000); 
-                    }
+        // 단일 옵션 계산
+        document.querySelectorAll('.card.active:not(.multi)').forEach(c => {
+            total += parseInt(c.getAttribute('data-price') || 0);
+            let name = c.getAttribute('data-name') || c.querySelector('.card-title')?.innerText || '';
+            const groupName = c.getAttribute('data-group') || '옵션';
+
+            // 비스포크 사이즈 금액 공식 처리
+            if(c.id === 'trigger-bespoke') {
+                const inpW = document.getElementById('inp-w');
+                const inpH = document.getElementById('inp-h');
+                const w = inpW ? (inpW.value || 0) : 0;
+                const h = inpH ? (inpH.value || 0) : 0;
+                
+                if(w > 0 && h > 0) {
+                    name = `비스포크 (${w}x${h}mm)`;
+                    total += Math.round((w * h / 1000000) * 150000); 
                 }
-                summary += `<div><strong style="color:#888; display:inline-block; width:80px;">${c.getAttribute('data-group').toUpperCase()}:</strong> ${name}</div>`;
-            });
+            }
+            summary += `<div><strong style="color:#888; display:inline-block; width:80px;">${groupName.toUpperCase()}:</strong> ${name}</div>`;
+        });
 
-            let foams = [];
-            document.querySelectorAll('.card.multi.active').forEach(c => {
-                const p = parseInt(c.getAttribute('data-price'));
-                const t = parseFloat(c.querySelector('.thick-val').value);
-                total += (p * t);
-                foams.push(`${c.getAttribute('data-name')} (${t}mm)`);
-            });
+        // 다중 옵션(폼) 두께 비례 계산
+        let foams = [];
+        document.querySelectorAll('.card.multi.active').forEach(c => {
+            const p = parseInt(c.getAttribute('data-price') || 0);
+            const thickInput = c.querySelector('.thick-val');
+            const t = thickInput ? parseFloat(thickInput.value || 0) : 1; 
+            
+            total += (p * t);
+            foams.push(`${c.getAttribute('data-name')} (${t}mm)`);
+        });
+
+        if (document.querySelectorAll('.card.multi').length > 0) {
             summary += `<div><strong style="color:#888; display:inline-block; width:80px;">FOAM:</strong> ${foams.length > 0 ? foams.join(' + ') : '선택 안 함'}</div>`;
-
-            targetPrice = total;
-            animatePrice();
-            document.getElementById('final-summary').innerHTML = summary;
         }
 
-       // [수정됨] 스텝 이동 및 새 페이지 전환
-function move(dir) {
-    // 6단계에서 '상담 신청하기(다음)' 버튼을 누르면 완전히 다른 페이지로 넘어감
-    if (currentStep === 6 && dir === 1) {
-        // 👇 이동할 새로운 HTML 파일 이름을 적어주세요.
-        window.location.href = "contact.html"; 
-        return;
+        // 최종 가격 및 요약 텍스트 갱신
+        targetPrice = total;
+        animatePrice();
+        
+        const finalSummary = document.getElementById('final-summary');
+        if(finalSummary) finalSummary.innerHTML = summary;
     }
-    jump(currentStep + dir); 
-}
 
-// [수정됨] 점프 기능 (최대 6단계 유지)
-function jump(n) {
-    if (n < 1 || n > 6) return; 
-    document.getElementById(`step${currentStep}`).classList.remove('active');
-    currentStep = n;
-    document.getElementById(`step${currentStep}`).classList.add('active');
-    
-    document.getElementById('btn-prev').style.display = (currentStep === 1) ? 'none' : 'block';
-    
-    // 6단계일 때 하단 버튼 이름을 '상담 신청하기'로 변경
-    document.getElementById('btn-next').innerText = (currentStep === 6) ? '상담 신청하기' : '다음';
-    
-    updateNav();
-    window.scrollTo(0,0);
-}
-
-// 상단 네비게이션 (최대 6단계 유지)
-function updateNav() {
-    for(let i=1; i<=6; i++) { 
-        const nav = document.getElementById(`nav-${i}`);
-        if(nav) {
-            nav.classList.remove('active', 'done');
-            if(i < currentStep) nav.classList.add('done');
-            if(i === currentStep) nav.classList.add('active');
-        }
-    }
-}
-        // [기능] 코어 1차 대분류(스프링/폼) 선택 시 하위 메뉴 열기
-function selectCoreType(type, el) {
-    // 1. 대분류 카드 활성화 색상 변경
-    document.querySelectorAll('#core-category .card').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-
-    // 2. 세부 옵션창 숨기기 및 선택한 것만 열기 (애니메이션 효과 포함)
-    document.getElementById('type-spring').style.display = 'none';
-    document.getElementById('type-foam').style.display = 'none';
-    
-    const targetDiv = document.getElementById('type-' + type);
-    targetDiv.style.display = 'block';
-    targetDiv.style.animation = 'slideUp 0.4s ease-out forwards'; // 스르륵 올라오는 효과
-
-    // 3. 다른 카테고리를 누르면 기존에 선택했던 세부 가격 옵션을 초기화 (오류 방지)
-    document.querySelectorAll('.core-sub-options .card').forEach(c => c.classList.remove('active'));
-    calc(); // 가격을 다시 원상 복구 계산
-}
-// [기능] 코어 대분류(스프링/폼) 제어
-function selectCoreType(type, el) {
-    document.querySelectorAll('#core-category .card').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-
-    document.getElementById('type-spring').style.display = 'none';
-    document.getElementById('type-foam').style.display = 'none';
-    
-    document.getElementById('type-' + type).style.display = 'block';
-
-    // 다른 분류를 누르면 기존 하위 세부 선택 전체 초기화
-    document.querySelectorAll('#type-spring .card, #type-foam .card').forEach(c => c.classList.remove('active'));
-    calc(); 
-}
-
-// [신규 기능] 스프링 하위 옵션(지름, 단수) 독립 선택 함수
-function pickSpringSub(el, subgroup) {
-    // 해당 서브그룹(지름 또는 단수) 내에서만 선택 교체
-    document.querySelectorAll(`.card[data-group="${subgroup}"]`).forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-    
-    // 왼쪽 넓은 화면에 이미지 및 설명 업데이트
-    updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
-    calc();
-}
-// 텐션 및 존(Zone) 전용 클릭 함수
-function pickSub(el, subgroup) {
-    // 1. 같은 그룹 내의 활성화 상태 모두 해제
-    document.querySelectorAll(`.card[data-group="${subgroup}"]`).forEach(c => c.classList.remove('active'));
-    
-    // 2. 현재 클릭한 카드만 활성화
-    el.classList.add('active');
-    
-    // 3. 왼쪽 이미지 변경 및 견적 다시 계산
-    if(typeof updateVisual === 'function') {
-        updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
-    }
-    calc();
-}
-
-        window.onload = calc;
-    </script>
+    // 페이지 로딩 완료 시 최초 1회 계산 실행
+    window.onload = function() {
+        calc();
+    };
+</script>
 </body>
 </html>
