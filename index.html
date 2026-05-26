@@ -638,6 +638,7 @@
     }
 
     targetPrice = total;
+    localStorage.setItem('targetPrice', targetPrice);
     animatePrice();
     const finalSummary = document.getElementById('final-summary');
     if(finalSummary) finalSummary.innerHTML = summary;
