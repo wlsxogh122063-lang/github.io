@@ -538,12 +538,26 @@
 
     // 다중 옵션 선택 (폼 등)
     function pickMulti(el) {
-        el.classList.toggle('active');
-        if(el.classList.contains('active')) {
-            updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
-        }
-        calc();
+    el.classList.toggle('active');
+    
+    // 선택된 모든 내장재(폼) 이름을 모아서 저장
+    let selectedInners = [];
+    document.querySelectorAll('.card.multi.active').forEach(c => {
+        let name = c.getAttribute('data-name') || c.querySelector('.card-title')?.innerText || '';
+        selectedInners.push(name);
+    });
+    
+    if(selectedInners.length > 0) {
+        localStorage.setItem('userInner', selectedInners.join(', '));
+    } else {
+        localStorage.removeItem('userInner');
     }
+
+    if(el.classList.contains('active')) {
+        updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
+    }
+    calc();
+}
 
     // ----------------------------------------------------------------
     // 5. 시각 요소 업데이트 및 총 금액/요약 계산
