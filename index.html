@@ -229,26 +229,26 @@
                         <div class="card multi" data-price="80000" data-name="NASA-Tech 메모리폼" data-img="foam_nasa.png" data-desc="체온과 무게에 반응하여 신체 굴곡을 부드럽게 감싸는 폼입니다." onclick="pickMulti(this)">
                             <div class="card-title">NASA-Tech Memory Foam</div>
                             <select class="thick-val" onchange="calc()" onclick="event.stopPropagation()">
-                                <option value="2.5">두께: 2.5 mm</option><option value="3.8">두께: 3.8 mm</option><option value="5.0">두께: 5.0 mm</option>
+                                <option value="2.5">두께: 2.5 cm</option><option value="3.8">두께: 3.8 cm</option><option value="5.0">두께: 5.0 cm</option>
                             </select>
                         </div>
                         <div class="card multi" data-price="90000" data-name="Cool-Touch 메모리폼" data-img="foam_cool.png" data-desc="열을 흡수하고 방출하여 과열을 방지하고 밤새 시원한 온도를 유지합니다." onclick="pickMulti(this)">
                             <div class="card-title">Cool-Touch Memory Foam</div>
                             <select class="thick-val" onchange="calc()" onclick="event.stopPropagation()">
-                                <option value="2.5">두께: 2.5 mm</option><option value="3.8">두께: 3.8 mm</option><option value="5.0">두께: 5.0 mm</option>
+                                <option value="2.5">두께: 2.5 cm</option><option value="3.8">두께: 3.8 cm</option><option value="5.0">두께: 5.0 cm</option>
                             </select>
                         </div>
                         <div class="card multi" data-price="70000" data-name="Soft-Touch 메모리폼" data-img="foam_sani.png" data-desc="상단 레이어와 하단 지지층 사이에서 완충 작용을 수행하며, 부드러운 반발력으로 신체의 움직임에 유연하게 대응합니다." onclick="pickMulti(this)">
                             <div class="card-title">Soft-Touch Memory Foam</div>
                             <select class="thick-val" onchange="calc()" onclick="event.stopPropagation()">
-                                <option value="2.5">두께: 2.5 mm</option><option value="3.8">두께: 3.8 mm</option><option value="5.0">두께: 5.0 mm</option>
+                                <option value="2.5">두께: 2.5 cm</option><option value="3.8">두께: 3.8 cm</option><option value="5.0">두께: 5.0 cm</option>
                             </select>
                         </div>
                         <div class="card multi" data-price="60000" data-name="comfort 메모리폼" data-img="foam_wave.png" data-desc="신체의 압력을 분산시키고 척추 정렬을 돕는 부드러운 지지력을 제공합니다." onclick="pickMulti(this)">
                             <div class="card-title">comfort memory foam
                             </div>
                             <select class="thick-val" onchange="calc()" onclick="event.stopPropagation()">
-                                <option value="2.5">두께: 2.5 mm</option><option value="3.8">두께: 3.8 mm</option><option value="5.0">두께: 5.0 mm</option>
+                                <option value="2.5">두께: 2.5 cm</option><option value="3.8">두께: 3.8 cm</option><option value="5.0">두께: 5.0 cm</option>
                             </select>
                         </div>
                     </div>
@@ -346,18 +346,13 @@
     </div>
 
 <script>
-    // ----------------------------------------------------------------
     // 1. 기본 설정 변수
-    // ----------------------------------------------------------------
     let currentStep = 1;
     let targetPrice = 1200000;
     let displayPrice = 1200000;
 
-    // ----------------------------------------------------------------
     // 2. 화면 이동 및 네비게이션 제어
-    // ----------------------------------------------------------------
     function move(dir) {
-        // 6단계에서 '다음(상담신청)' 버튼 클릭 시 연락처 폼 페이지로 이동
         if (currentStep === 6 && dir === 1) {
             window.location.href = "contact.html"; 
             return;
@@ -372,11 +367,9 @@
         currentStep = n;
         document.getElementById(`step${currentStep}`).classList.add('active');
         
-        // 1단계에서는 이전 버튼 숨김
         const btnPrev = document.getElementById('btn-prev');
         if(btnPrev) btnPrev.style.display = (currentStep === 1) ? 'none' : 'block';
         
-        // 6단계일 때 하단 버튼 이름을 '상담 신청하기'로 변경
         const btnNext = document.getElementById('btn-next');
         if(btnNext) btnNext.innerText = (currentStep === 6) ? '상담 신청하기' : '다음';
         
@@ -395,9 +388,7 @@
         }
     }
 
-    // ----------------------------------------------------------------
-    // 3. 코어(대분류) 선택 및 가격 애니메이션
-    // ----------------------------------------------------------------
+    // 3. 애니메이션 및 코어(대분류) 선택
     function animatePrice() {
         const diff = targetPrice - displayPrice;
         if (Math.abs(diff) > 10) {
@@ -413,155 +404,19 @@
     }
 
     function selectCoreType(type, el) {
-        // 추천 시스템용 코어 데이터 저장
         localStorage.setItem('userCore', type);
         
-        // 💡 추가: 처음에 새로 시작할 때 기존 존(Zone) 선택 기록을 싹 지워줍니다.
-        localStorage.removeItem('userZone'); 
-
-        // 상단 탭 활성화 변경
         document.querySelectorAll('#core-category .card').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
 
-        // 하위 섹션(스프링/폼) 전환
         const springDiv = document.getElementById('type-spring');
         const foamDiv = document.getElementById('type-foam');
-        if(springDiv) springDiv.style.display = 'none';
-        if(foamDiv) foamDiv.style.display = 'none';
-        
-        const targetDiv = document.getElementById('type-' + type);
-        if(targetDiv) {
-            targetDiv.style.display = 'block';
-            targetDiv.style.animation = 'slideUp 0.4s ease-out forwards'; 
-        }
+        if(springDiv) springDiv.style.display = (type === 'spring') ? 'block' : 'none';
+        if(foamDiv) foamDiv.style.display = (type === 'foam') ? 'block' : 'none';
 
-        // 다른 탭으로 넘어갈 때 선택된 기존 하위 옵션 초기화
-        document.querySelectorAll('#type-spring .card, #type-foam .card, .core-sub-options .card').forEach(c => c.classList.remove('active'));
         calc(); 
     }
 
-    // ----------------------------------------------------------------
-    // 4. 세부 옵션 선택 (단일 및 다중 선택 완벽 통합)
-    // ----------------------------------------------------------------
-    
-    // 통합형 단일 옵션 선택 함수 (pick, pickSub, pickSpringSub 모두 호환)
-    function pick(el, subgroupParam) {
-        const group = subgroupParam || el.getAttribute('data-group');
-        const wasActive = el.classList.contains('active'); // 💡 현재 켜져 있는지 확인
-
-        // 1. 같은 그룹 내의 카드 불을 모두 끕니다.
-        if (group) {
-            document.querySelectorAll(`.card[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
-        } else {
-            const siblings = el.parentElement.querySelectorAll('.card');
-            siblings.forEach(c => c.classList.remove('active'));
-        }
-
-        // 2. 이미 켜져 있던 것을 다시 누른 경우 -> 선택 취소 및 데이터 삭제
-        if (wasActive) {
-            if (group === 'tension') localStorage.removeItem('userTension');
-            if (group === 'size') localStorage.removeItem('userSize');
-            if (group === 'zone') localStorage.removeItem('userZone');
-            if (group === 'inner' || group === '내장재') localStorage.removeItem('userInner');
-            if (group === 'fabric' || group === '원단') localStorage.removeItem('userFabric');
-
-            if (group === 'size') {
-                const boxCustom = document.getElementById('box-custom');
-                const areaBespoke = document.getElementById('area-bespoke');
-                if(boxCustom) boxCustom.classList.remove('show');
-                if(areaBespoke) areaBespoke.classList.remove('show');
-            }
-        } 
-        // 3. 새로운 카드를 누른 경우 -> 불을 켜고(active) 데이터 저장
-        else {
-            el.classList.add('active');
-            
-            const titleEl = el.querySelector('.card-title');
-            const selectedText = titleEl ? titleEl.innerText : (el.getAttribute('data-name') || el.innerText);
-
-            if (group === 'tension') localStorage.setItem('userTension', selectedText);
-            if (group === 'size') localStorage.setItem('userSize', selectedText);
-            if (group === 'zone') localStorage.setItem('userZone', selectedText);
-            if (group === 'inner' || group === '내장재') localStorage.setItem('userInner', selectedText);
-            if (group === 'fabric' || group === '원단') localStorage.setItem('userFabric', selectedText);
-
-            if (group === 'size') {
-                const isBespoke = (el.id === 'trigger-bespoke');
-                const boxCustom = document.getElementById('box-custom');
-                const areaBespoke = document.getElementById('area-bespoke');
-                if(boxCustom) boxCustom.classList.toggle('show', isBespoke);
-                if(areaBespoke) areaBespoke.classList.toggle('show', isBespoke);
-            }
-        }
-
-        // 왼쪽 이미지 갱신 및 계산 다시 실행
-        updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
-        calc();
-        // 1. 같은 그룹 내 카드 비활성화 후 현재 클릭한 카드만 활성화
-        if (group) {
-            document.querySelectorAll(`.card[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
-        } else {
-            // 그룹이 명시되지 않은 단순 카드일 경우 형제 요소들 비활성화
-            const siblings = el.parentElement.querySelectorAll('.card');
-            siblings.forEach(c => c.classList.remove('active'));
-        }
-        el.classList.add('active');
-
-        // 2. 추천 시스템용 데이터 추출 및 브라우저 저장
-        const titleEl = el.querySelector('.card-title');
-        const selectedText = titleEl ? titleEl.innerText : (el.getAttribute('data-name') || el.innerText);
-
-        if (group === 'tension') localStorage.setItem('userTension', selectedText);
-        if (group === 'size') localStorage.setItem('userSize', selectedText);
-        if (group === 'zone') localStorage.setItem('userZone', selectedText);
-        if (group === 'inner' || group === '내장재') localStorage.setItem('userInner', selectedText);
-        if (group === 'fabric' || group === '원단') localStorage.setItem('userFabric', selectedText);
-
-        // 3. 사이즈가 '비스포크'일 경우 가로세로 입력창(area-bespoke, box-custom) 띄우기
-        if (group === 'size') {
-            const isBespoke = (el.id === 'trigger-bespoke');
-            const boxCustom = document.getElementById('box-custom');
-            const areaBespoke = document.getElementById('area-bespoke');
-            
-            if(boxCustom) boxCustom.classList.toggle('show', isBespoke);
-            if(areaBespoke) areaBespoke.classList.toggle('show', isBespoke);
-        }
-
-        // 4. 왼쪽 큰 이미지 갱신 및 총 견적/요약본 재생산
-        updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
-        calc();
-    }
-
-    // 기존 HTML 태그들(onclick="pickSub(...)")에서 에러가 나지 않도록 연결해두는 브릿지 역할
-    function pickSub(el, subgroup) { pick(el, subgroup); }
-    function pickSpringSub(el, subgroup) { pick(el, subgroup); }
-
-    // 다중 옵션 선택 (폼 등)
-    function pickMulti(el) {
-    el.classList.toggle('active');
-    
-    // 선택된 모든 내장재(폼) 이름을 모아서 저장
-    let selectedInners = [];
-    document.querySelectorAll('.card.multi.active').forEach(c => {
-        let name = c.getAttribute('data-name') || c.querySelector('.card-title')?.innerText || '';
-        selectedInners.push(name);
-    });
-    
-    if(selectedInners.length > 0) {
-        localStorage.setItem('userInner', selectedInners.join(', '));
-    } else {
-        localStorage.removeItem('userInner');
-    }
-
-    if(el.classList.contains('active')) {
-        updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
-    }
-    calc();
-}
-
-    // ----------------------------------------------------------------
-    // 5. 시각 요소 업데이트 및 총 금액/요약 계산
-    // ----------------------------------------------------------------
     function updateVisual(img, title, desc) {
         const vImg = document.getElementById('main-img-display');
         const vTitle = document.getElementById('visual-title');
@@ -580,95 +435,140 @@
         }
     }
 
-    function calc() {
-        let total = 0;
-        let summary = "";
+    // 4. 클릭 선택 함수 (토글 및 기존 오류 완벽 차단)
+    function pick(el, subgroupParam) {
+        const wasActive = el.classList.contains('active');
+        const group = subgroupParam || el.getAttribute('data-group');
 
-        document.querySelectorAll('.card.active:not(.multi)').forEach(c => {
-        total += parseInt(c.getAttribute('data-price') || 0);
-        let name = c.getAttribute('data-name') || c.querySelector('.card-title')?.innerText || '';
-        const groupName = c.getAttribute('data-group') || '옵션';
+        // 같은 구역에 있는 카드 불 강제로 모두 끄기
+        const container = el.closest('.options-grid') || el.parentElement;
+        if(container) {
+            container.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+        }
 
-        if(c.id === 'trigger-bespoke') {
-            const inpW = document.getElementById('inp-w');
-            const inpH = document.getElementById('inp-h');
-            const w = inpW ? (inpW.value || 0) : 0;
-            const h = inpH ? (inpH.value || 0) : 0;
-            if(w > 0 && h > 0) {
-                name = `비스포크 (${w}x${h}mm)`;
-                total += Math.round((w * h / 1000000) * 150000); 
+        if (!wasActive) {
+            el.classList.add('active'); // 꺼져있던 거면 불 켜기
+            
+            if (group === 'size') {
+                const isBespoke = (el.id === 'trigger-bespoke');
+                const boxCustom = document.getElementById('box-custom');
+                const areaBespoke = document.getElementById('area-bespoke');
+                if(boxCustom) boxCustom.classList.toggle('show', isBespoke);
+                if(areaBespoke) areaBespoke.classList.toggle('show', isBespoke);
+            }
+            updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
+        } else {
+            // 이미 켜져 있던 걸 다시 눌렀으므로 꺼진 상태 유지, 열린 창 닫기
+            if (group === 'size') {
+                const boxCustom = document.getElementById('box-custom');
+                const areaBespoke = document.getElementById('area-bespoke');
+                if(boxCustom) boxCustom.classList.remove('show');
+                if(areaBespoke) areaBespoke.classList.remove('show');
             }
         }
-        summary += `<div><strong style="color:#888; display:inline-block; width:80px;">${groupName.toUpperCase()}:</strong> ${name}</div>`;
-    });
+        calc();
+    }
 
-    // 💡 [추가됨] 스프링/폼 하위의 세부 옵션(단수, 지름 등) 싹 긁어모으기
-    let coreDetails = [];
-    const activeCore = localStorage.getItem('userCore') || 'spring'; 
-    const targetDivId = activeCore === 'foam' ? '#type-foam' : '#type-spring';
-    
-    document.querySelectorAll(`${targetDivId} .card.active:not(.multi)`).forEach(c => {
-        let name = c.getAttribute('data-name') || c.querySelector('.card-title')?.innerText || '';
-        const groupName = c.getAttribute('data-group');
-        // 존, 텐션 등 공통 그룹이 아닌 순수 '코어 디테일'만 배열에 담습니다.
-        if (!['size', 'zone', 'tension', 'fabric', 'inner'].includes(groupName)) {
-            coreDetails.push(name);
+    // 💡 에러 방지용 필수 연결 다리 (절대 지우시면 안 됩니다!)
+    function pickSub(el, subgroup) { pick(el, subgroup); }
+    function pickSpringSub(el, subgroup) { pick(el, subgroup); }
+
+    function pickMulti(el) {
+        el.classList.toggle('active');
+        if(el.classList.contains('active')) {
+            updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
+        }
+        calc(); 
+    }
+
+    // 숫자 입력 시 실시간 감지 저장
+    document.addEventListener('input', function(e) {
+        if(e.target.tagName.toLowerCase() === 'input') {
+            calc();
         }
     });
-    
-    // 수집한 디테일을 저장 (예: "4단 스프링 + 2.0mm")
-    if(coreDetails.length > 0) {
-        localStorage.setItem('userCoreDetail', coreDetails.join(' + '));
-    } else {
-        localStorage.removeItem('userCoreDetail');
-    }
 
-    // 2. 다중 옵션(폼 내장재) 두께 비례 가격 계산
-    let foams = [];
-    document.querySelectorAll('.card.multi.active').forEach(c => {
-        const p = parseInt(c.getAttribute('data-price') || 0);
-        const thickInput = c.querySelector('.thick-val');
-        const t = thickInput ? parseFloat(thickInput.value || 0) : 1; 
-        total += (p * t);
-        foams.push(`${c.getAttribute('data-name')} (${t}mm)`);
-    });
+    // 5. 완벽 데이터 정리 및 계산
+    function calc() {
+        let total = 0;
+        const activeCore = localStorage.getItem('userCore') || 'spring';
+        let finalData = { size: '', zone: '', fabric: '', tension: '', inner: '', coreDetail: '' };
 
-    if (document.querySelectorAll('.card.multi').length > 0) {
-        summary += `<div><strong style="color:#888; display:inline-block; width:80px;">FOAM:</strong> ${foams.length > 0 ? foams.join(' + ') : '선택 안 함'}</div>`;
-    }
+        document.querySelectorAll('.card.active').forEach(c => {
+            if (activeCore === 'spring' && c.closest('#type-foam')) return;
+            if (activeCore === 'foam' && c.closest('#type-spring')) return;
 
-    targetPrice = total;
-    localStorage.setItem('targetPrice', targetPrice);
-    animatePrice();
-    const finalSummary = document.getElementById('final-summary');
-    if(finalSummary) finalSummary.innerHTML = summary;
-}
+            const groupName = c.getAttribute('data-group') || '';
+            let name = c.getAttribute('data-name') || c.querySelector('.card-title')?.innerText || '';
+            let p = parseInt(c.getAttribute('data-price') || 0);
 
-        // 다중 옵션(폼) 두께 비례 계산
-        let foams = [];
-        document.querySelectorAll('.card.multi.active').forEach(c => {
-            const p = parseInt(c.getAttribute('data-price') || 0);
-            const thickInput = c.querySelector('.thick-val');
-            const t = thickInput ? parseFloat(thickInput.value || 0) : 1; 
-            
-            total += (p * t);
-            foams.push(`${c.getAttribute('data-name')} (${t}mm)`);
+            if (c.classList.contains('multi')) {
+                const thickInput = c.querySelector('input[type="number"], .thick-val');
+                const t = thickInput ? parseFloat(thickInput.value || 0) : 1; 
+                
+                if (thickInput && t > 0) {
+                    name = `${name} (${t}cm)`; 
+                    total += (p * t);
+                } else if (!thickInput) {
+                    total += p;
+                } else {
+                    return; 
+                }
+                finalData.inner += (finalData.inner ? ' + ' : '') + name;
+                return;
+            }
+
+            if (c.id === 'trigger-bespoke') {
+                const inpW = document.getElementById('inp-w');
+                const inpH = document.getElementById('inp-h');
+                const w = inpW ? parseFloat(inpW.value || 0) : 0;
+                const h = inpH ? parseFloat(inpH.value || 0) : 0;
+                if (w > 0 && h > 0) {
+                    name = `비스포크 (${w}x${h})`;
+                    total += Math.round((w * h / 1000000) * 150000); 
+                } else {
+                    name = `비스포크 (수치 미입력)`;
+                }
+            } else {
+                total += p; 
+            }
+
+            if (groupName === 'size') finalData.size = name;
+            else if (groupName === 'zone') finalData.zone = name;
+            else if (groupName === 'fabric' || groupName === '원단') finalData.fabric = name;
+            else if (groupName === 'tension') finalData.tension = name;
+            else if (groupName !== 'core') {
+                finalData.coreDetail += (finalData.coreDetail ? ' + ' : '') + name;
+            }
         });
 
-        if (document.querySelectorAll('.card.multi').length > 0) {
-            summary += `<div><strong style="color:#888; display:inline-block; width:80px;">FOAM:</strong> ${foams.length > 0 ? foams.join(' + ') : '선택 안 함'}</div>`;
-        }
-
-        // 최종 가격 및 요약 텍스트 갱신
+        // 덮어쓰기 (빈값 정리)
+        if(finalData.size) localStorage.setItem('userSize', finalData.size); else localStorage.removeItem('userSize');
+        if(finalData.zone) localStorage.setItem('userZone', finalData.zone); else localStorage.removeItem('userZone');
+        if(finalData.fabric) localStorage.setItem('userFabric', finalData.fabric); else localStorage.removeItem('userFabric');
+        if(finalData.tension) localStorage.setItem('userTension', finalData.tension); else localStorage.removeItem('userTension');
+        if(finalData.inner) localStorage.setItem('userInner', finalData.inner); else localStorage.removeItem('userInner');
+        if(finalData.coreDetail) localStorage.setItem('userCoreDetail', finalData.coreDetail); else localStorage.removeItem('userCoreDetail');
+        
         targetPrice = total;
+        localStorage.setItem('targetPrice', targetPrice);
         animatePrice();
         
         const finalSummary = document.getElementById('final-summary');
-        if(finalSummary) finalSummary.innerHTML = summary;
-    
+        if(finalSummary) {
+            let sumHTML = "";
+            if(finalData.coreDetail) sumHTML += `<div><strong style="color:#888; display:inline-block; width:80px;">코어상세:</strong> ${finalData.coreDetail}</div>`;
+            if(finalData.size) sumHTML += `<div><strong style="color:#888; display:inline-block; width:80px;">사이즈:</strong> ${finalData.size}</div>`;
+            if(finalData.zone) sumHTML += `<div><strong style="color:#888; display:inline-block; width:80px;">존:</strong> ${finalData.zone}</div>`;
+            if(finalData.inner) sumHTML += `<div><strong style="color:#888; display:inline-block; width:80px;">내장재:</strong> ${finalData.inner}</div>`;
+            if(finalData.fabric) sumHTML += `<div><strong style="color:#888; display:inline-block; width:80px;">원단:</strong> ${finalData.fabric}</div>`;
+            if(finalData.tension) sumHTML += `<div><strong style="color:#888; display:inline-block; width:80px;">텐션:</strong> ${finalData.tension}</div>`;
+            finalSummary.innerHTML = sumHTML;
+        }
+    }
 
-    // 페이지 로딩 완료 시 최초 1회 계산 실행
     window.onload = function() {
+        localStorage.removeItem('userZone'); 
         calc();
     };
 </script>
