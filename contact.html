@@ -97,17 +97,25 @@ HTML
                 return;
             }
 
-            const formData = {
-                "이름": nameField, 
-                "연락처": phoneField,
-                "지역": regionField,
-                "코어": localStorage.getItem('userCore') || '미선택',
-                "사이즈": localStorage.getItem('userSize') || '미선택',
-                "존": localStorage.getItem('userZone') || '미선택',
-                "내장재": localStorage.getItem('userInner') || '미선택',
-                "원단": localStorage.getItem('userFabric') || '미선택',
-                "텐션": localStorage.getItem('userTension') || '미선택'
-            };
+            // 💡 [추가됨] 코어와 디테일을 합치는 작업
+let coreText = localStorage.getItem('userCore') === 'foam' ? '폼' : '스프링';
+const coreDetail = localStorage.getItem('userCoreDetail');
+
+if (coreDetail) {
+    coreText = `${coreText} (${coreDetail})`; // 결과: "스프링 (4단 코일 + 2.0mm)"
+}
+
+const formData = {
+    "이름": nameField, 
+    "연락처": phoneField,
+    "지역": regionField,
+    "코어": coreText, // 합쳐진 글자가 구글 시트로 넘어갑니다.
+    "사이즈": localStorage.getItem('userSize') || '미선택',
+    "존": localStorage.getItem('userZone') || '미선택',
+    "내장재": localStorage.getItem('userInner') || '미선택',
+    "원단": localStorage.getItem('userFabric') || '미선택',
+    "텐션": localStorage.getItem('userTension') || '미선택'
+};
 
             const sheetMonkeyUrl = "https://api.sheetmonkey.io/form/f3eHUQzLcxELGsoeFQCoCq";
 
