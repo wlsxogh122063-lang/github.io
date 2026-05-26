@@ -312,7 +312,7 @@
 
     <h3 style="font-size: 14px; margin-top: 25px; margin-bottom: 12px; color: var(--gold);">압력 분산 존 시스템 (Zoning)</h3>
     <div class="grid">
-        <div class="card active" data-group="zone" data-price="0" data-name="5-Zone System" data-img="zone_5.png" data-desc="5개 부위를 체계적으로 지지합니다." onclick="pickSub(this, 'zone')">
+        <div class="card" data-group="zone" data-price="0" data-name="5-Zone System" data-img="zone_5.png" data-desc="5개 부위를 체계적으로 지지합니다." onclick="pickSub(this, 'zone')">
             <div class="card-title">5-Zone System</div><div class="card-sub">표준 인체공학 지지</div>
         </div>
         <div class="card" data-group="zone" data-price="350000" data-name="7-Zone System" data-img="zone_7.png" data-desc="7개의 구역으로 나누어 미세한 하중 변화까지 흡수합니다." onclick="pickSub(this, 'zone')">
@@ -415,6 +415,9 @@
     function selectCoreType(type, el) {
         // 추천 시스템용 코어 데이터 저장
         localStorage.setItem('userCore', type);
+        
+        // 💡 추가: 처음에 새로 시작할 때 기존 존(Zone) 선택 기록을 싹 지워줍니다.
+        localStorage.removeItem('userZone'); 
 
         // 상단 탭 활성화 변경
         document.querySelectorAll('#core-category .card').forEach(c => c.classList.remove('active'));
@@ -443,9 +446,57 @@
     
     // 통합형 단일 옵션 선택 함수 (pick, pickSub, pickSpringSub 모두 호환)
     function pick(el, subgroupParam) {
-        // 태그에 적힌 data-group 속성을 우선적으로 찾음
         const group = subgroupParam || el.getAttribute('data-group');
+        const wasActive = el.classList.contains('active'); // 💡 현재 켜져 있는지 확인
 
+        // 1. 같은 그룹 내의 카드 불을 모두 끕니다.
+        if (group) {
+            document.querySelectorAll(`.card[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
+        } else {
+            const siblings = el.parentElement.querySelectorAll('.card');
+            siblings.forEach(c => c.classList.remove('active'));
+        }
+
+        // 2. 이미 켜져 있던 것을 다시 누른 경우 -> 선택 취소 및 데이터 삭제
+        if (wasActive) {
+            if (group === 'tension') localStorage.removeItem('userTension');
+            if (group === 'size') localStorage.removeItem('userSize');
+            if (group === 'zone') localStorage.removeItem('userZone');
+            if (group === 'inner' || group === '내장재') localStorage.removeItem('userInner');
+            if (group === 'fabric' || group === '원단') localStorage.removeItem('userFabric');
+
+            if (group === 'size') {
+                const boxCustom = document.getElementById('box-custom');
+                const areaBespoke = document.getElementById('area-bespoke');
+                if(boxCustom) boxCustom.classList.remove('show');
+                if(areaBespoke) areaBespoke.classList.remove('show');
+            }
+        } 
+        // 3. 새로운 카드를 누른 경우 -> 불을 켜고(active) 데이터 저장
+        else {
+            el.classList.add('active');
+            
+            const titleEl = el.querySelector('.card-title');
+            const selectedText = titleEl ? titleEl.innerText : (el.getAttribute('data-name') || el.innerText);
+
+            if (group === 'tension') localStorage.setItem('userTension', selectedText);
+            if (group === 'size') localStorage.setItem('userSize', selectedText);
+            if (group === 'zone') localStorage.setItem('userZone', selectedText);
+            if (group === 'inner' || group === '내장재') localStorage.setItem('userInner', selectedText);
+            if (group === 'fabric' || group === '원단') localStorage.setItem('userFabric', selectedText);
+
+            if (group === 'size') {
+                const isBespoke = (el.id === 'trigger-bespoke');
+                const boxCustom = document.getElementById('box-custom');
+                const areaBespoke = document.getElementById('area-bespoke');
+                if(boxCustom) boxCustom.classList.toggle('show', isBespoke);
+                if(areaBespoke) areaBespoke.classList.toggle('show', isBespoke);
+            }
+        }
+
+        // 왼쪽 이미지 갱신 및 계산 다시 실행
+        updateVisual(el.getAttribute('data-img'), el.getAttribute('data-name'), el.getAttribute('data-desc'));
+        calc();
         // 1. 같은 그룹 내 카드 비활성화 후 현재 클릭한 카드만 활성화
         if (group) {
             document.querySelectorAll(`.card[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
