@@ -52,6 +52,11 @@ HTML
             <input type="tel" id="user-phone" placeholder="ex) 010-1234-5678">
         </div>
 
+        <div class="input-group">
+            <label for="user-region"><i class="fa-solid fa-location-dot"></i> 사는 지역</label>
+            <input type="text" id="user-region" placeholder="ex) 서울 강남구, 인천 부평구">
+        </div>
+
         <div style="background: #0a0a0a; padding: 20px; border-radius: 4px; border: 1px solid #1a1a1a; margin-bottom: 10px;">
             <div class="summary-title">선택하신 비스포크 스펙 요약</div>
             <div id="spec-summary">
@@ -63,7 +68,6 @@ HTML
     </div>
 
     <script>
-        // 페이지가 열리면 localStorage에서 고른 데이터를 화면에 미리 요약해서 보여줌
         window.onload = function() {
             const summaryDiv = document.getElementById('spec-summary');
             
@@ -84,20 +88,21 @@ HTML
             `;
         }
 
-        // 시트 몽키 데이터 전송 함수
         function submitBespokeData() {
             const nameField = document.getElementById('user-name').value.trim();
             const phoneField = document.getElementById('user-phone').value.trim();
+            const regionField = document.getElementById('user-region').value.trim();
 
-            if(!nameField || !phoneField) {
-                alert("고객명과 연락처를 모두 정확히 입력해 주세요.");
+            if(!nameField || !phoneField || !regionField) {
+                alert("고객명, 연락처, 사는 지역을 모두 정확히 입력해 주세요.");
                 return;
             }
 
-            // 1. 구글 스프레드시트 헤더명과 일치하도록 매핑
+            // 구글 스프레드시트 헤더명과 일치하도록 매핑 (지역 추가)
             const formData = {
                 "이름": nameField, 
                 "연락처": phoneField,
+                "지역": regionField,
                 "코어": localStorage.getItem('userCore') || '미선택',
                 "사이즈": localStorage.getItem('userSize') || '미선택',
                 "존": localStorage.getItem('userZone') || '미선택',
@@ -106,7 +111,6 @@ HTML
                 "텐션": localStorage.getItem('userTension') || '미선택'
             };
 
-            // 💡 2. 사장님의 시트몽키 웹훅 URL 주소를 여기에 넣어주세요.
             const sheetMonkeyUrl = "여기에_시트몽키_URL_입력";
 
             if(sheetMonkeyUrl === "여기에_시트몽키_URL_입력") {
@@ -114,7 +118,6 @@ HTML
                 return;
             }
 
-            // 3. 데이터 실시간 전송
             fetch(sheetMonkeyUrl, {
                 method: 'POST',
                 headers: {
@@ -125,8 +128,8 @@ HTML
             .then(response => {
                 if(response.ok) {
                     alert("맞춤 제작 상담 신청이 정상적으로 완료되었습니다.");
-                    localStorage.clear(); // 개인정보 안전을 위해 제출 후 전송 데이터 초기화
-                    window.location.href = "index.html"; // 첫 메인 화면으로 이동
+                    localStorage.clear(); 
+                    window.location.href = "index.html"; 
                 } else {
                     alert("전송 중 오류가 발생했습니다. 다시 시도해 주세요.");
                 }
