@@ -584,26 +584,64 @@
         let total = 0;
         let summary = "";
 
-        // 단일 옵션 계산
         document.querySelectorAll('.card.active:not(.multi)').forEach(c => {
-            total += parseInt(c.getAttribute('data-price') || 0);
-            let name = c.getAttribute('data-name') || c.querySelector('.card-title')?.innerText || '';
-            const groupName = c.getAttribute('data-group') || '옵션';
+        total += parseInt(c.getAttribute('data-price') || 0);
+        let name = c.getAttribute('data-name') || c.querySelector('.card-title')?.innerText || '';
+        const groupName = c.getAttribute('data-group') || '옵션';
 
-            // 비스포크 사이즈 금액 공식 처리
-            if(c.id === 'trigger-bespoke') {
-                const inpW = document.getElementById('inp-w');
-                const inpH = document.getElementById('inp-h');
-                const w = inpW ? (inpW.value || 0) : 0;
-                const h = inpH ? (inpH.value || 0) : 0;
-                
-                if(w > 0 && h > 0) {
-                    name = `비스포크 (${w}x${h}mm)`;
-                    total += Math.round((w * h / 1000000) * 150000); 
-                }
+        if(c.id === 'trigger-bespoke') {
+            const inpW = document.getElementById('inp-w');
+            const inpH = document.getElementById('inp-h');
+            const w = inpW ? (inpW.value || 0) : 0;
+            const h = inpH ? (inpH.value || 0) : 0;
+            if(w > 0 && h > 0) {
+                name = `비스포크 (${w}x${h}mm)`;
+                total += Math.round((w * h / 1000000) * 150000); 
             }
-            summary += `<div><strong style="color:#888; display:inline-block; width:80px;">${groupName.toUpperCase()}:</strong> ${name}</div>`;
-        });
+        }
+        summary += `<div><strong style="color:#888; display:inline-block; width:80px;">${groupName.toUpperCase()}:</strong> ${name}</div>`;
+    });
+
+    // 💡 [추가됨] 스프링/폼 하위의 세부 옵션(단수, 지름 등) 싹 긁어모으기
+    let coreDetails = [];
+    const activeCore = localStorage.getItem('userCore') || 'spring'; 
+    const targetDivId = activeCore === 'foam' ? '#type-foam' : '#type-spring';
+    
+    document.querySelectorAll(`${targetDivId} .card.active:not(.multi)`).forEach(c => {
+        let name = c.getAttribute('data-name') || c.querySelector('.card-title')?.innerText || '';
+        const groupName = c.getAttribute('data-group');
+        // 존, 텐션 등 공통 그룹이 아닌 순수 '코어 디테일'만 배열에 담습니다.
+        if (!['size', 'zone', 'tension', 'fabric', 'inner'].includes(groupName)) {
+            coreDetails.push(name);
+        }
+    });
+    
+    // 수집한 디테일을 저장 (예: "4단 스프링 + 2.0mm")
+    if(coreDetails.length > 0) {
+        localStorage.setItem('userCoreDetail', coreDetails.join(' + '));
+    } else {
+        localStorage.removeItem('userCoreDetail');
+    }
+
+    // 2. 다중 옵션(폼 내장재) 두께 비례 가격 계산
+    let foams = [];
+    document.querySelectorAll('.card.multi.active').forEach(c => {
+        const p = parseInt(c.getAttribute('data-price') || 0);
+        const thickInput = c.querySelector('.thick-val');
+        const t = thickInput ? parseFloat(thickInput.value || 0) : 1; 
+        total += (p * t);
+        foams.push(`${c.getAttribute('data-name')} (${t}mm)`);
+    });
+
+    if (document.querySelectorAll('.card.multi').length > 0) {
+        summary += `<div><strong style="color:#888; display:inline-block; width:80px;">FOAM:</strong> ${foams.length > 0 ? foams.join(' + ') : '선택 안 함'}</div>`;
+    }
+
+    targetPrice = total;
+    animatePrice();
+    const finalSummary = document.getElementById('final-summary');
+    if(finalSummary) finalSummary.innerHTML = summary;
+}
 
         // 다중 옵션(폼) 두께 비례 계산
         let foams = [];
@@ -626,7 +664,7 @@
         
         const finalSummary = document.getElementById('final-summary');
         if(finalSummary) finalSummary.innerHTML = summary;
-    }
+    
 
     // 페이지 로딩 완료 시 최초 1회 계산 실행
     window.onload = function() {
