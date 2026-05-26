@@ -98,7 +98,6 @@ HTML
                 return;
             }
 
-            // 구글 스프레드시트 헤더명과 일치하도록 매핑 (지역 추가)
             const formData = {
                 "이름": nameField, 
                 "연락처": phoneField,
@@ -111,6 +110,7 @@ HTML
                 "텐션": localStorage.getItem('userTension') || '미선택'
             };
 
+            // 👇 아래 큰따옴표 안에 시트몽키 주소를 꼭 붙여넣으세요!
             const sheetMonkeyUrl = "여기에_시트몽키_URL_입력";
 
             if(sheetMonkeyUrl === "여기에_시트몽키_URL_입력") {
