@@ -50,9 +50,11 @@ HTML
         const rawCore = localStorage.getItem('userCore') || 'spring';
         const userCore = (rawCore.includes('폼') || rawCore.toLowerCase().includes('foam')) ? 'foam' : 'spring';
 
-        // 존(Zone) 추출 (7존 vs 일반 5존)
-        const rawZone = localStorage.getItem('userZone') || "";
-        const userZone = rawZone.includes('7') ? '7zone' : 'normal';
+        // 존(Zone) 추출 (안 골랐으면 빈칸으로 둠)
+        const rawZone = localStorage.getItem('userZone');
+        let userZone = ""; // 기본값을 아예 빈칸(미선택)으로 설정
+        if (rawZone && rawZone.includes('7')) userZone = '7zone';
+        else if (rawZone && (rawZone.includes('5') || rawZone.includes('일반'))) userZone = 'normal';
 
         // 내장재 추출
         const rawInner = localStorage.getItem('userInner') || 'memory';
@@ -121,25 +123,24 @@ HTML
         let bestMatch = hilkerModels[0];
         let minPenalty = 9999;
 
-        hilkerModels.forEach(model => {
+       hilkerModels.forEach(model => {
             let penalty = 0;
             
-            // 1순위: 코어 (불일치 시 1000점)
+            // 1순위: 코어
             if (model.core !== userCore) penalty += 1000;
             
-            // 2순위: 존 (불일치 시 100점)
-            if (model.zone !== userZone) penalty += 100;
+            // 💡 2순위: 존 (고객이 선택했을 때만 페널티 부여, 안 골랐으면 무시)
+            if (userZone !== "" && model.zone !== userZone) penalty += 100;
             
-            // 3순위: 내장재 (불일치 시 50점)
-            if (model.inner !== userInner) penalty += 50;
+            // 3순위: 내장재
+            if (userInner && model.inner !== userInner) penalty += 50;
             
-            // 4순위: 원단 (불일치 시 20점)
-            if (model.fabric !== userFabric) penalty += 20;
+            // 4순위: 원단
+            if (userFabric && model.fabric !== userFabric) penalty += 20;
             
-            // 5순위: 텐션 (동점자 분리용, 차이당 1점)
+            // 5순위: 텐션
             penalty += Math.abs(model.tension - userTension);
 
-            // 최저 페널티를 가진 모델 선정
             if (penalty < minPenalty) {
                 minPenalty = penalty;
                 bestMatch = model;
