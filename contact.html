@@ -1,3 +1,4 @@
+HTML
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -109,13 +110,7 @@
                 "텐션": localStorage.getItem('userTension') || '미선택'
             };
 
-            // 👇 아래 큰따옴표 안에 시트몽키 주소를 꼭 붙여넣으세요!
             const sheetMonkeyUrl = "https://api.sheetmonkey.io/form/f3eHUQzLcxELGsoeFQCoCq";
-
-            if(sheetMonkeyUrl === "https://api.sheetmonkey.io/form/f3eHUQzLcxELGsoeFQCoCq") {
-                alert("시트 몽키 URL 주소가 설정되지 않았습니다. 소스 코드에서 주소를 변경해 주세요.");
-                return;
-            }
 
             fetch(sheetMonkeyUrl, {
                 method: 'POST',
