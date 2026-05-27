@@ -130,7 +130,7 @@ HTML
             const fullAddress = regionField + (regionDetailField ? " " + regionDetailField : "");
 
             // 다음 페이지(recommend.html)의 GPS 거리 계산용으로 전체 주소 저장
-            localStorage.setItem('userRegion', fullAddress); 
+            localStorage.setItem('userRegion', regionField);
 
             let coreText = localStorage.getItem('userCore') === 'foam' ? '폼' : '스프링';
             const coreDetail = localStorage.getItem('userCoreDetail');
