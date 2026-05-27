@@ -4,9 +4,11 @@ HTML
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HILKER 1888 - 맞춤 모델 추천</title>
+    <title>HILKER 1888 - 맞춤 모델 추천 및 매장 안내</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=44f045bb98289fcf773b6bcd62c6ec25&libraries=services"></script>
     
     <style>
         :root { --gold: #D4AF37; --bg-base: #000000; --bg-panel: #111111; --text-main: #ffffff; --text-sub: #888888; }
@@ -14,59 +16,89 @@ HTML
         body { background-color: var(--bg-base); color: var(--text-main); font-family: 'Noto Sans KR', sans-serif; text-align: center; padding: 80px 20px; }
         
         .logo { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 20px; letter-spacing: 3px; margin-bottom: 40px; }
-        .title { font-size: 28px; font-weight: 700; margin-bottom: 15px; }
+        .title { font-size: 28px; font-weight: 700; margin-bottom: 15px; line-height: 1.3; }
         .subtitle { font-size: 15px; color: var(--text-sub); margin-bottom: 50px; line-height: 1.6; }
         
-        .result-box { background: var(--bg-panel); border: 1px solid var(--gold); padding: 50px 30px; border-radius: 8px; max-width: 600px; margin: 0 auto; box-shadow: 0 10px 30px rgba(212, 175, 55, 0.1); }
+        /* 매트리스 추천 박스 */
+        .result-box { background: var(--bg-panel); border: 1px solid var(--gold); padding: 50px 30px; border-radius: 8px; max-width: 600px; margin: 0 auto 30px auto; box-shadow: 0 10px 30px rgba(212, 175, 55, 0.1); }
         .match-rate { display: inline-block; padding: 5px 15px; border: 1px solid var(--gold); color: var(--gold); font-size: 13px; font-weight: bold; border-radius: 20px; margin-bottom: 25px; }
         .model-name { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; margin-bottom: 10px; color: #fff; letter-spacing: 1px; }
         .model-tags { font-size: 14px; color: var(--gold); margin-bottom: 25px; font-weight: 500; }
-        .model-desc { font-size: 15px; color: #ccc; line-height: 1.8; margin-bottom: 40px; word-break: keep-all; }
+        .model-desc { font-size: 15px; color: #ccc; line-height: 1.8; word-break: keep-all; }
         
-        .btn { display: inline-block; padding: 16px 40px; background: var(--gold); color: #000; text-decoration: none; font-weight: 700; border-radius: 4px; font-size: 15px; transition: 0.3s; }
-        .btn:hover { background: #e8c552; }
+        /* 매장 안내 박스 */
+        .store-box { background: var(--bg-panel); border: 1px solid #333; padding: 40px 30px; border-radius: 8px; max-width: 600px; margin: 0 auto; text-align: left; }
+        .section-title { color: var(--gold); font-size: 18px; margin-bottom: 20px; font-weight: 700; border-bottom: 1px solid #333; padding-bottom: 12px; }
+        .btn-map { display: block; width: 100%; text-align: center; padding: 15px; background: var(--gold); color: #000; text-decoration: none; font-weight: 700; border-radius: 4px; font-size: 16px; margin-top: 25px; transition: 0.3s; }
+        .btn-map:hover { background: #e8c552; }
+
+        /* 홈 버튼 */
+        .btn-home { display: inline-block; padding: 14px 40px; background: transparent; border: 1px solid #444; color: #aaa; text-decoration: none; font-weight: 500; border-radius: 4px; font-size: 15px; margin-top: 40px; transition: 0.3s; }
+        .btn-home:hover { background: #222; color: #fff; border-color: #666; }
         
-        .debug-info { margin-top: 30px; font-size: 12px; color: #444; border-top: 1px dashed #333; padding-top: 15px; }
+        .debug-info { margin-top: 30px; font-size: 12px; color: #444; border-top: 1px dashed #333; padding-top: 15px; text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="logo">HILKER 1888</div>
-    <div class="title">비스포크 분석 결과</div>
-    <div class="subtitle">고객님의 설계 데이터를 정밀 분석하여<br>가장 완벽하게 일치하는 모델을 찾았습니다.</div>
+    <div class="title">맞춤 모델 추천 및 매장 안내</div>
+    <div class="subtitle">고객님의 설계 데이터를 정밀 분석하여 일치하는 모델을 찾았습니다.<br>추천 모델을 가까운 매장에서 직접 경험해 보세요.</div>
 
     <div class="result-box">
         <div class="match-rate"><i class="fa-solid fa-check"></i> 최적 매칭 모델</div>
         <div class="model-name" id="res-name">분석 중...</div>
         <div class="model-tags" id="res-tags"></div>
         <div class="model-desc" id="res-desc">데이터를 불러오는 중입니다.</div>
-        <a href="index.html" class="btn">메인으로 돌아가기</a>
-        
         <div class="debug-info" id="debug-text"></div>
     </div>
 
+    <div class="store-box" id="branch-info-box">
+        <div class="section-title">📍 가까운 가구매장에서 힐커를 만나보세요</div>
+        
+        <p id="branch-loading" style="color: #aaa; text-align: center; margin: 20px 0;">
+            <i class="fa-solid fa-spinner fa-spin"></i> 고객님과 가장 가까운 매장을 찾는 중입니다...
+        </p>
+        
+        <div id="branch-result" style="display: none;">
+            <div id="store-name" style="font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 10px;"></div>
+            <div id="store-address" style="font-size: 15px; color: #aaa; margin-bottom: 8px;"></div>
+            <div id="store-phone" style="font-size: 15px; color: #aaa; margin-bottom: 8px;"></div>
+            <a id="store-map-link" href="#" target="_blank" class="btn-map">
+                카카오맵으로 길찾기 <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>
+            </a>
+        </div>
+        
+        <div id="branch-default" style="display: none;">
+            <div style="color: #aaa; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
+                현재 고객님 계신 곳 주변의 대리점 검색이 원활하지 않습니다.<br>본점 대표번호로 문의해 주시면 거주지와 가장 가까운 매장을 친절하게 안내해 드리겠습니다.
+            </div>
+            <div style="font-size: 18px; color: var(--gold); font-weight: 700;">본점 대표번호 : 1588-0000</div>
+        </div>
+    </div>
+
+    <a href="index.html" class="btn-home">메인으로 돌아가기</a>
+
     <script>
-        // 1. 고객 데이터 불러오기 및 정제 (한글/영문 호환)
+        // =========================================================
+        // PART 1. 매트리스 추천 알고리즘 (기존 로직 유지)
+        // =========================================================
         const rawCore = localStorage.getItem('userCore') || 'spring';
         const userCore = (rawCore.includes('폼') || rawCore.toLowerCase().includes('foam')) ? 'foam' : 'spring';
 
-        // 존(Zone) 추출 (안 골랐으면 빈칸으로 둠)
         const rawZone = localStorage.getItem('userZone');
-        let userZone = ""; // 기본값을 아예 빈칸(미선택)으로 설정
+        let userZone = ""; 
         if (rawZone && rawZone.includes('7')) userZone = '7zone';
         else if (rawZone && (rawZone.includes('5') || rawZone.includes('일반'))) userZone = 'normal';
 
-        // 내장재 추출
         const rawInner = localStorage.getItem('userInner') || 'memory';
         const userInner = (rawInner.includes('메모리') || rawInner.toLowerCase().includes('memory')) ? 'memory' : rawInner;
 
-        // 원단 추출 (비스코스 vs 텐셀 vs 윈터쿨)
         const rawFabric = localStorage.getItem('userFabric') || 'viscose';
         let userFabric = 'viscose';
         if (rawFabric.includes('텐셀') || rawFabric.toLowerCase().includes('tencel')) userFabric = 'tencel';
         if (rawFabric.includes('윈터') || rawFabric.toLowerCase().includes('winter')) userFabric = 'winter';
 
-        // 텐션 추출 (글자 포함 시 숫자로 자동 변환 - 동점자 판별용 내부 로직)
         const rawTension = localStorage.getItem('userTension') || "3";
         let userTension = 3; 
         if (rawTension.includes('1') || rawTension.includes('하드')) userTension = 1;
@@ -75,70 +107,26 @@ HTML
         if (rawTension.includes('4') || rawTension.includes('미디엄소프트')) userTension = 4;
         if (rawTension.includes('5') || rawTension.includes('소프트')) userTension = 5;
 
-        // 디버그 텍스트 출력
-        document.getElementById('debug-text').innerText = 
-            `[디버그] 인식된 데이터 -> 코어: ${userCore} | 존: ${userZone} | 원단: ${userFabric} | 내부텐션계산: ${userTension}`;
+        document.getElementById('debug-text').innerText = `[디버그] 인식된 데이터 -> 코어: ${userCore} | 존: ${userZone} | 원단: ${userFabric} | 내부텐션계산: ${userTension}`;
 
-        // 2. 힐커 6종 모델 실제 데이터 세팅 (특징에서 텐션 텍스트 제외)
         const hilkerModels = [
-            { 
-                name: "엠파이어 (EMPIRE)", 
-                core: "spring", zone: "7zone", inner: "memory", fabric: "viscose", tension: 3, 
-                tags: "#4단스프링 #7존 #비스코스캐시미어", 
-                desc: "최고급 비스코스 캐시미어 실크 원단에 쿨터치 폼과 7존 티타늄 하이브리드 코일(60mm 4단)이 결합되어 완벽한 밸런스를 제공합니다." 
-            },
-            { 
-                name: "슈프림 (SUPREME)", 
-                core: "spring", zone: "7zone", inner: "memory", fabric: "viscose", tension: 4, 
-                tags: "#2단스프링 #7존 #은나노항균", 
-                desc: "다공성 비스코스 은나노 항균 원단과 7존 티타늄 코일이 촘촘히 굴곡을 받쳐주어 구름 위에 누운 듯한 포근함을 선사합니다." 
-            },
-            { 
-                name: "옥스포드 (OXFORD)", 
-                core: "spring", zone: "normal", inner: "memory", fabric: "tencel", tension: 2, 
-                tags: "#1단스프링 #5존 #친환경텐셀", 
-                desc: "친환경 텐셀 원단에 두꺼운 고탄성 컴포트 폼과 티타늄 코일이 더해져 허리를 탄탄하고 안정적으로 지탱합니다." 
-            },
-            { 
-                name: "클로제 (KLOSE)", 
-                core: "spring", zone: "normal", inner: "memory", fabric: "viscose", tension: 3, 
-                tags: "#1단스프링 #5존 #고밀도메모리폼", 
-                desc: "3.8cm 고밀도 메모리폼과 티타늄 독립 스프링이 완벽하게 체압을 분산하여 프리미엄 지지력을 발휘합니다." 
-            },
-            { 
-                name: "베를린 (BERLIN)", 
-                core: "foam", zone: "normal", inner: "memory", fabric: "winter", tension: 1, 
-                tags: "#폼코어 #윈터쿨원단 #초고밀도", 
-                desc: "스프링을 완전히 대체하는 10cm 엑티브 베이스 초고밀도 지지 폼층이 적용되어 흔들림 없이 강력하게 받쳐주는 폼 매트리스입니다." 
-            },
-            { 
-                name: "바이마르 (WEIMAR)", 
-                core: "foam", zone: "normal", inner: "memory", fabric: "tencel", tension: 3, 
-                tags: "#폼코어 #식물성텐셀 #HD엑티브폼", 
-                desc: "식물성 텐셀 원단과 20cm HD 엑티브 폼, 그리고 두꺼운 메모리폼이 부드러움과 무너짐 없는 지지력을 동시에 제공합니다." 
-            }
+            { name: "엠파이어 (EMPIRE)", core: "spring", zone: "7zone", inner: "memory", fabric: "viscose", tension: 3, tags: "#4단스프링 #7존 #비스코스캐시미어", desc: "최고급 비스코스 캐시미어 실크 원단에 쿨터치 폼과 7존 티타늄 하이브리드 코일(60mm 4단)이 결합되어 완벽한 밸런스를 제공합니다." },
+            { name: "슈프림 (SUPREME)", core: "spring", zone: "7zone", inner: "memory", fabric: "viscose", tension: 4, tags: "#2단스프링 #7존 #은나노항균", desc: "다공성 비스코스 은나노 항균 원단과 7존 티타늄 코일이 촘촘히 굴곡을 받쳐주어 구름 위에 누운 듯한 포근함을 선사합니다." },
+            { name: "옥스포드 (OXFORD)", core: "spring", zone: "normal", inner: "memory", fabric: "tencel", tension: 2, tags: "#1단스프링 #5존 #친환경텐셀", desc: "친환경 텐셀 원단에 두꺼운 고탄성 컴포트 폼과 티타늄 코일이 더해져 허리를 탄탄하고 안정적으로 지탱합니다." },
+            { name: "클로제 (KLOSE)", core: "spring", zone: "normal", inner: "memory", fabric: "viscose", tension: 3, tags: "#1단스프링 #5존 #고밀도메모리폼", desc: "3.8cm 고밀도 메모리폼과 티타늄 독립 스프링이 완벽하게 체압을 분산하여 프리미엄 지지력을 발휘합니다." },
+            { name: "베를린 (BERLIN)", core: "foam", zone: "normal", inner: "memory", fabric: "winter", tension: 1, tags: "#폼코어 #윈터쿨원단 #초고밀도", desc: "스프링을 완전히 대체하는 10cm 엑티브 베이스 초고밀도 지지 폼층이 적용되어 흔들림 없이 강력하게 받쳐주는 폼 매트리스입니다." },
+            { name: "바이마르 (WEIMAR)", core: "foam", zone: "normal", inner: "memory", fabric: "tencel", tension: 3, tags: "#폼코어 #식물성텐셀 #HD엑티브폼", desc: "식물성 텐셀 원단과 20cm HD 엑티브 폼, 그리고 두꺼운 메모리폼이 부드러움과 무너짐 없는 지지력을 동시에 제공합니다." }
         ];
 
-        // 3. 우선순위 기반 매칭 알고리즘 (가중치 점수제)
         let bestMatch = hilkerModels[0];
         let minPenalty = 9999;
 
-       hilkerModels.forEach(model => {
+        hilkerModels.forEach(model => {
             let penalty = 0;
-            
-            // 1순위: 코어
             if (model.core !== userCore) penalty += 1000;
-            
-            // 💡 2순위: 존 (고객이 선택했을 때만 페널티 부여, 안 골랐으면 무시)
             if (userZone !== "" && model.zone !== userZone) penalty += 100;
-            
-            // 3순위: 내장재
             if (userInner && model.inner !== userInner) penalty += 50;
-            
-            // 4순위: 원단
             if (userFabric && model.fabric !== userFabric) penalty += 20;
-            
-            // 5순위: 텐션
             penalty += Math.abs(model.tension - userTension);
 
             if (penalty < minPenalty) {
@@ -147,10 +135,97 @@ HTML
             }
         });
 
-        // 4. 결과 출력
         document.getElementById('res-name').innerText = bestMatch.name;
         document.getElementById('res-tags').innerText = bestMatch.tags;
         document.getElementById('res-desc').innerText = bestMatch.desc;
+
+        // =========================================================
+        // PART 2. 전국 매장 GPS 거리 계산 및 매칭 로직
+        // =========================================================
+        const branches = [
+            { name: "광주 아르마니 가구", address: "광주광역시 서구 하남대로 568", phone: "전화번호 등록 필요", lat: 35.1687, lng: 126.8776 },
+            { name: "강릉 아르마니 가구", address: "강원특별자치도 강릉시 공항길 20", phone: "전화번호 등록 필요", lat: 37.7518, lng: 128.8760 },
+            { name: "경산 힐커", address: "경상북도 경산시 원효로 294", phone: "전화번호 등록 필요", lat: 35.8250, lng: 128.7360 },
+            { name: "김포종합가구", address: "경기도 김포시 양촌읍 양곡로 363", phone: "전화번호 등록 필요", lat: 37.6433, lng: 126.6277 },
+            { name: "동해 아르마니", address: "강원특별자치도 동해시 동해대로", phone: "전화번호 등록 필요", lat: 37.5247, lng: 129.1142 },
+            { name: "대전 관저동 보르네오", address: "대전광역시 서구 구봉산북로 17", phone: "전화번호 등록 필요", lat: 36.3013, lng: 127.3323 },
+            { name: "서김해 에이스침대", address: "경상남도 김해시 서김해산단로 59", phone: "전화번호 등록 필요", lat: 35.2173, lng: 128.8458 },
+            { name: "서부산 힐커", address: "부산광역시 강서구 유통단지1로 76", phone: "전화번호 등록 필요", lat: 35.1611, lng: 128.9566 },
+            { name: "시흥 대야가구프라자", address: "경기도 시흥시 호현로 115", phone: "전화번호 등록 필요", lat: 37.4452, lng: 126.7867 },
+            { name: "서순천가구백화점 (양성국갤러리)", address: "전라남도 순천시 서면 순천로 212", phone: "전화번호 등록 필요", lat: 34.9754, lng: 127.5028 },
+            { name: "의왕 아르디앙", address: "경기도 의왕시 경수대로 103", phone: "전화번호 등록 필요", lat: 37.3444, lng: 126.9691 },
+            { name: "인천 남동 힐커", address: "인천광역시 남동구 고잔동 남동가구단지", phone: "전화번호 등록 필요", lat: 37.4046, lng: 126.6961 },
+            { name: "일산 핀란디아", address: "경기도 고양시 일산서구 덕이동 일산가구단지", phone: "전화번호 등록 필요", lat: 37.6854, lng: 126.7451 },
+            { name: "아현 마띠에르", address: "서울특별시 서대문구 신촌로 아현가구거리", phone: "전화번호 등록 필요", lat: 37.5562, lng: 126.9555 },
+            { name: "울산 가구마트 (에몬스가구)", address: "울산광역시 남구 남중로", phone: "전화번호 등록 필요", lat: 35.5383, lng: 129.3113 },
+            { name: "정읍가구단지", address: "전북특별자치도 정읍시 충정로", phone: "전화번호 등록 필요", lat: 35.5698, lng: 126.8566 },
+            { name: "제천 엠바스", address: "충청북도 제천시 내토로", phone: "전화번호 등록 필요", lat: 37.1326, lng: 128.1994 },
+            { name: "제주 현대돌침대", address: "제주특별자치도 제주시 연삼로", phone: "전화번호 등록 필요", lat: 33.4996, lng: 126.5311 },
+            { name: "칠곡 명품갤러리", address: "경상북도 칠곡군 석적읍", phone: "전화번호 등록 필요", lat: 35.9934, lng: 128.4022 },
+            { name: "강릉 까사미아", address: "강원특별자치도 강릉시 경강로", phone: "전화번호 등록 필요", lat: 37.7600, lng: 128.9000 },
+            { name: "용인 힐커 직영점", address: "경기도 용인시 기흥구 언동로 어정가구단지", phone: "전화번호 등록 필요", lat: 37.2801, lng: 127.1450 },
+            { name: "파주 힐커 직영점", address: "경기도 파주시 송학2길 운정가구단지", phone: "전화번호 등록 필요", lat: 37.7127, lng: 126.7461 }
+        ];
+
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function findNearestBranch() {
+            const userRegion = localStorage.getItem('userRegion') || '';
+            const loadingEl = document.getElementById('branch-loading');
+            const resultEl = document.getElementById('branch-result');
+            const defaultEl = document.getElementById('branch-default');
+
+            if (!userRegion) {
+                loadingEl.style.display = 'none';
+                defaultEl.style.display = 'block';
+                return;
+            }
+
+            const geocoder = new kakao.maps.services.Geocoder();
+
+            geocoder.addressSearch(userRegion, function(result, status) {
+                loadingEl.style.display = 'none';
+
+                if (status === kakao.maps.services.Status.OK) {
+                    const userLat = parseFloat(result[0].y);
+                    const userLng = parseFloat(result[0].x);
+                    let nearestBranch = null;
+                    let minDistance = Infinity;
+
+                    branches.forEach(branch => {
+                        const distance = getDistance(userLat, userLng, branch.lat, branch.lng);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            nearestBranch = branch;
+                            nearestBranch.distanceCalc = (distance).toFixed(1); 
+                        }
+                    });
+
+                    document.getElementById('store-name').innerHTML = `${nearestBranch.name} <span style="font-size: 14px; color: #D4AF37; font-weight: 400; margin-left: 5px;">(약 ${nearestBranch.distanceCalc}km)</span>`;
+                    document.getElementById('store-address').innerText = `· 주소 : ${nearestBranch.address}`;
+                    document.getElementById('store-phone').innerText = `· 전화 : ${nearestBranch.phone}`;
+                    document.getElementById('store-map-link').href = `https://map.kakao.com/link/search/${encodeURIComponent(nearestBranch.name + " " + nearestBranch.address)}`;
+                    
+                    resultEl.style.display = 'block';
+                } else {
+                    defaultEl.style.display = 'block';
+                }
+            });
+        }
+
+        // 페이지 로딩 시 카카오 지도가 렌더링될 약간의 시간을 주고 매장 찾기 실행
+        window.addEventListener('load', function() {
+            setTimeout(findNearestBranch, 600);
+        });
     </script>
 </body>
 </html>
