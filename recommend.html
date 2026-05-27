@@ -208,22 +208,20 @@ HTML
 
             const geocoder = new kakao.maps.services.Geocoder();
 
-            // 💡 1차 검색: 고객이 입력한 정확한 전체 주소
+            // 1차 검색: 정확한 전체 주소
             geocoder.addressSearch(userRegion, function(result, status) {
                 if (status === kakao.maps.services.Status.OK) {
-                    // 한 번에 찾았을 경우
                     renderNearestBranch(result[0].y, result[0].x);
                 } else {
-                    // 💡 2차 검색: 상세 번지수(210-1) 때문에 실패한 경우, 동네 이름까지만 잘라서 넓게 재검색!
-                    const broadAddressParts = userRegion.split(' ');
-                    // "경기", "시흥시", "대야동" 까지만 3단어로 자름
-                    const broadAddress = broadAddressParts.slice(0, 3).join(' '); 
+                    // 2차 검색: 실패 시 주소를 '동/면' 단위까지만 잘라서 재검색
+                    // 예: "경기 시흥시 대야동 210-1" -> "경기 시흥시 대야동"
+                    const broadAddress = userRegion.split(' ').slice(0, 3).join(' '); 
                     
                     geocoder.addressSearch(broadAddress, function(result2, status2) {
                         if (status2 === kakao.maps.services.Status.OK) {
                             renderNearestBranch(result2[0].y, result2[0].x);
                         } else {
-                            // 넓게 찾아도 실패할 경우에만 방어막 띄움
+                            // 진짜로 안 나오는 경우만 방어막 띄움
                             document.getElementById('branch-loading').style.display = 'none';
                             document.getElementById('branch-default').style.display = 'block';
                         }
