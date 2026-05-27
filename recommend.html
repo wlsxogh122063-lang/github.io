@@ -8,8 +8,6 @@ HTML
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=44f045bb98289fcf773b6bcd62c6ec25&libraries=services"></script>
-    
     <style>
         :root { --gold: #D4AF37; --bg-base: #000000; --bg-panel: #111111; --text-main: #ffffff; --text-sub: #888888; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,20 +17,17 @@ HTML
         .title { font-size: 28px; font-weight: 700; margin-bottom: 15px; line-height: 1.3; }
         .subtitle { font-size: 15px; color: var(--text-sub); margin-bottom: 50px; line-height: 1.6; }
         
-        /* 매트리스 추천 박스 */
         .result-box { background: var(--bg-panel); border: 1px solid var(--gold); padding: 50px 30px; border-radius: 8px; max-width: 600px; margin: 0 auto 30px auto; box-shadow: 0 10px 30px rgba(212, 175, 55, 0.1); }
         .match-rate { display: inline-block; padding: 5px 15px; border: 1px solid var(--gold); color: var(--gold); font-size: 13px; font-weight: bold; border-radius: 20px; margin-bottom: 25px; }
         .model-name { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; margin-bottom: 10px; color: #fff; letter-spacing: 1px; }
         .model-tags { font-size: 14px; color: var(--gold); margin-bottom: 25px; font-weight: 500; }
         .model-desc { font-size: 15px; color: #ccc; line-height: 1.8; word-break: keep-all; }
         
-        /* 매장 안내 박스 */
         .store-box { background: var(--bg-panel); border: 1px solid #333; padding: 40px 30px; border-radius: 8px; max-width: 600px; margin: 0 auto; text-align: left; }
         .section-title { color: var(--gold); font-size: 18px; margin-bottom: 20px; font-weight: 700; border-bottom: 1px solid #333; padding-bottom: 12px; }
         .btn-map { display: block; width: 100%; text-align: center; padding: 15px; background: var(--gold); color: #000; text-decoration: none; font-weight: 700; border-radius: 4px; font-size: 16px; margin-top: 25px; transition: 0.3s; }
         .btn-map:hover { background: #e8c552; }
 
-        /* 홈 버튼 */
         .btn-home { display: inline-block; padding: 14px 40px; background: transparent; border: 1px solid #444; color: #aaa; text-decoration: none; font-weight: 500; border-radius: 4px; font-size: 15px; margin-top: 40px; transition: 0.3s; }
         .btn-home:hover { background: #222; color: #fff; border-color: #666; }
         
@@ -71,7 +66,7 @@ HTML
         
         <div id="branch-default" style="display: none;">
             <div style="color: #aaa; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
-                현재 고객님 계신 곳 주변의 대리점 검색이 원활하지 않습니다.<br>본점 대표번호로 문의해 주시면 거주지와 가장 가까운 매장을 친절하게 안내해 드리겠습니다.
+                현재 고객님 계신 곳 주변의 대리점 검색이 원활하지 않거나 통신이 지연되고 있습니다.<br>본점 대표번호로 문의해 주시면 가장 가까운 매장을 친절하게 안내해 드리겠습니다.
             </div>
             <div style="font-size: 18px; color: var(--gold); font-weight: 700;">본점 대표번호 : 1588-0000</div>
         </div>
@@ -81,7 +76,7 @@ HTML
 
     <script>
         // =========================================================
-        // PART 1. 매트리스 추천 알고리즘 (기존 로직 유지)
+        // PART 1. 매트리스 추천 알고리즘 
         // =========================================================
         const rawCore = localStorage.getItem('userCore') || 'spring';
         const userCore = (rawCore.includes('폼') || rawCore.toLowerCase().includes('foam')) ? 'foam' : 'spring';
@@ -140,7 +135,7 @@ HTML
         document.getElementById('res-desc').innerText = bestMatch.desc;
 
         // =========================================================
-        // PART 2. 전국 매장 GPS 거리 계산 및 매칭 로직
+        // PART 2. 전국 매장 GPS 매칭 (카카오맵 동적 로딩 적용)
         // =========================================================
         const branches = [
             { name: "광주 아르마니 가구", address: "광주광역시 서구 하남대로 568", phone: "전화번호 등록 필요", lat: 35.1687, lng: 126.8776 },
@@ -190,6 +185,7 @@ HTML
                 return;
             }
 
+            // 💡 동적 로딩으로 kakao 객체가 100% 보장된 상태에서만 실행됩니다.
             const geocoder = new kakao.maps.services.Geocoder();
 
             geocoder.addressSearch(userRegion, function(result, status) {
@@ -222,9 +218,26 @@ HTML
             });
         }
 
-        // 페이지 로딩 시 카카오 지도가 렌더링될 약간의 시간을 주고 매장 찾기 실행
+        // 💡 브라우저 캐시를 무시하고 카카오 지도를 강제로 불러오는 마법의 코드
         window.addEventListener('load', function() {
-            setTimeout(findNearestBranch, 600);
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey=44f045bb98289fcf773b6bcd62c6ec25&libraries=services&autoload=false";
+
+            script.onload = function() {
+                kakao.maps.load(function() {
+                    // 스크립트가 완전히 로드된 후 안전하게 매장 찾기 실행
+                    findNearestBranch();
+                });
+            };
+
+            script.onerror = function() {
+                // 환경 설정이나 광고 차단기로 인해 완전히 막혔을 때 에러 화면 처리
+                document.getElementById('branch-loading').style.display = 'none';
+                document.getElementById('branch-default').style.display = 'block';
+            };
+
+            document.head.appendChild(script);
         });
     </script>
 </body>
