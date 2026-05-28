@@ -8,6 +8,8 @@ HTML
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=1d6c234ef003c46b24def00a44ac1124&libraries=services"></script>
+    
     <style>
         :root { --gold: #D4AF37; --bg-base: #000000; --bg-panel: #111111; --text-main: #ffffff; --text-sub: #888888; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -66,7 +68,7 @@ HTML
         
         <div id="branch-default" style="display: none;">
             <div style="color: #aaa; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
-                현재 고객님 계신 곳 주변의 대리점 검색이 원활하지 않거나 통신이 지연되고 있습니다.<br>본점 대표번호로 문의해 주시면 가장 가까운 매장을 친절하게 안내해 드리겠습니다.
+                현재 고객님 계신 곳 주변의 대리점 검색이 원활하지 않습니다.<br>본점 대표번호로 문의해 주시면 친절하게 안내해 드리겠습니다.
             </div>
             <div style="font-size: 18px; color: var(--gold); font-weight: 700;">본점 대표번호 : 1588-0000</div>
         </div>
@@ -135,7 +137,7 @@ HTML
         document.getElementById('res-desc').innerText = bestMatch.desc;
 
         // =========================================================
-        // PART 2. 전국 매장 GPS 매칭 (2단 자동 검색 업그레이드)
+        // PART 2. 매장 GPS 매칭 및 디버깅 추적 시스템
         // =========================================================
         const branches = [
             { name: "광주 아르마니 가구", address: "광주광역시 서구 하남대로 568", phone: "전화번호 등록 필요", lat: 35.1687, lng: 126.8776 },
@@ -173,7 +175,6 @@ HTML
             return R * c;
         }
 
-        // 거리를 계산하고 화면에 뿌려주는 함수
         function renderNearestBranch(lat, lng) {
             document.getElementById('branch-loading').style.display = 'none';
             const userLat = parseFloat(lat);
@@ -200,57 +201,53 @@ HTML
 
         function findNearestBranch() {
             const userRegion = localStorage.getItem('userRegion') || '';
+            console.log("👉 [1단계] contact에서 넘어온 주소 확인:", userRegion);
+
             if (!userRegion) {
+                console.warn("⚠️ 주소 데이터가 비어있습니다.");
                 document.getElementById('branch-loading').style.display = 'none';
                 document.getElementById('branch-default').style.display = 'block';
                 return;
             }
 
-            const geocoder = new kakao.maps.services.Geocoder();
+            try {
+                const geocoder = new kakao.maps.services.Geocoder();
+                console.log("👉 [2단계] 카카오 지오코더 엔진 정상 실행됨");
 
-            // 1차 검색: 정확한 전체 주소
-            geocoder.addressSearch(userRegion, function(result, status) {
-                if (status === kakao.maps.services.Status.OK) {
-                    renderNearestBranch(result[0].y, result[0].x);
-                } else {
-                    // 2차 검색: 실패 시 주소를 '동/면' 단위까지만 잘라서 재검색
-                    // 예: "경기 시흥시 대야동 210-1" -> "경기 시흥시 대야동"
-                    const broadAddress = userRegion.split(' ').slice(0, 3).join(' '); 
+                geocoder.addressSearch(userRegion, function(result, status) {
+                    console.log("👉 [3단계] 1차 검색 상태 코드:", status);
                     
-                    geocoder.addressSearch(broadAddress, function(result2, status2) {
-                        if (status2 === kakao.maps.services.Status.OK) {
-                            renderNearestBranch(result2[0].y, result2[0].x);
-                        } else {
-                            // 진짜로 안 나오는 경우만 방어막 띄움
-                            document.getElementById('branch-loading').style.display = 'none';
-                            document.getElementById('branch-default').style.display = 'block';
-                        }
-                    });
-                }
-            });
-        }
-
-        // 💡 [여기에 사장님의 새로운 자바스크립트 키를 꼭 넣어주세요!]
-        window.addEventListener('load', function() {
-            const script = document.createElement('script');
-            script.type = 'text/javascript';
-            // ▼▼▼ 아래 "여기에_새로운_키_입력" 글씨를 지우고 발급받은 새 키를 넣어주세요 ▼▼▼
-            script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey=1d6c234ef003c46b24def00a44ac1124&libraries=services&autoload=false";
-
-            script.onload = function() {
-                kakao.maps.load(function() {
-                    findNearestBranch();
+                    if (status === kakao.maps.services.Status.OK) {
+                        console.log("✅ 1차 검색 성공! 좌표:", result[0].y, result[0].x);
+                        renderNearestBranch(result[0].y, result[0].x);
+                    } else {
+                        const broadAddress = userRegion.split(' ').slice(0, 3).join(' '); 
+                        console.log("⚠️ 1차 검색 실패. 2차 넓은 검색 시도:", broadAddress);
+                        
+                        geocoder.addressSearch(broadAddress, function(result2, status2) {
+                            console.log("👉 [4단계] 2차 검색 상태 코드:", status2);
+                            if (status2 === kakao.maps.services.Status.OK) {
+                                console.log("✅ 2차 검색 성공! 좌표:", result2[0].y, result2[0].x);
+                                renderNearestBranch(result2[0].y, result2[0].x);
+                            } else {
+                                console.error("❌ 모든 검색 실패. 방어막 실행");
+                                document.getElementById('branch-loading').style.display = 'none';
+                                document.getElementById('branch-default').style.display = 'block';
+                            }
+                        });
+                    }
                 });
-            };
-
-            script.onerror = function() {
+            } catch(e) {
+                console.error("❌ 카카오 스크립트 에러 발생:", e);
                 document.getElementById('branch-loading').style.display = 'none';
                 document.getElementById('branch-default').style.display = 'block';
-            };
+            }
+        }
 
-            document.head.appendChild(script);
+        // 카카오 스크립트가 안전하게 켜진 후 0.5초 뒤에 매장 찾기 실행
+        window.addEventListener('load', function() {
+            setTimeout(findNearestBranch, 500);
         });
     </script>
 </body>
-</html>
 </html>
