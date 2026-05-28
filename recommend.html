@@ -8,31 +8,24 @@ HTML
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=1d6c234ef003c46b24def00a44ac1124&libraries=services"></script>
-    
     <style>
         :root { --gold: #D4AF37; --bg-base: #000000; --bg-panel: #111111; --text-main: #ffffff; --text-sub: #888888; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: var(--bg-base); color: var(--text-main); font-family: 'Noto Sans KR', sans-serif; text-align: center; padding: 80px 20px; }
-        
         .logo { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 20px; letter-spacing: 3px; margin-bottom: 40px; }
         .title { font-size: 28px; font-weight: 700; margin-bottom: 15px; line-height: 1.3; }
         .subtitle { font-size: 15px; color: var(--text-sub); margin-bottom: 50px; line-height: 1.6; }
-        
         .result-box { background: var(--bg-panel); border: 1px solid var(--gold); padding: 50px 30px; border-radius: 8px; max-width: 600px; margin: 0 auto 30px auto; box-shadow: 0 10px 30px rgba(212, 175, 55, 0.1); }
         .match-rate { display: inline-block; padding: 5px 15px; border: 1px solid var(--gold); color: var(--gold); font-size: 13px; font-weight: bold; border-radius: 20px; margin-bottom: 25px; }
         .model-name { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; margin-bottom: 10px; color: #fff; letter-spacing: 1px; }
         .model-tags { font-size: 14px; color: var(--gold); margin-bottom: 25px; font-weight: 500; }
         .model-desc { font-size: 15px; color: #ccc; line-height: 1.8; word-break: keep-all; }
-        
         .store-box { background: var(--bg-panel); border: 1px solid #333; padding: 40px 30px; border-radius: 8px; max-width: 600px; margin: 0 auto; text-align: left; }
         .section-title { color: var(--gold); font-size: 18px; margin-bottom: 20px; font-weight: 700; border-bottom: 1px solid #333; padding-bottom: 12px; }
         .btn-map { display: block; width: 100%; text-align: center; padding: 15px; background: var(--gold); color: #000; text-decoration: none; font-weight: 700; border-radius: 4px; font-size: 16px; margin-top: 25px; transition: 0.3s; }
         .btn-map:hover { background: #e8c552; }
-
         .btn-home { display: inline-block; padding: 14px 40px; background: transparent; border: 1px solid #444; color: #aaa; text-decoration: none; font-weight: 500; border-radius: 4px; font-size: 15px; margin-top: 40px; transition: 0.3s; }
         .btn-home:hover { background: #222; color: #fff; border-color: #666; }
-        
         .debug-info { margin-top: 30px; font-size: 12px; color: #444; border-top: 1px dashed #333; padding-top: 15px; text-align: center; }
     </style>
 </head>
@@ -52,11 +45,9 @@ HTML
 
     <div class="store-box" id="branch-info-box">
         <div class="section-title">📍 가까운 가구매장에서 힐커를 만나보세요</div>
-        
         <p id="branch-loading" style="color: #aaa; text-align: center; margin: 20px 0;">
             <i class="fa-solid fa-spinner fa-spin"></i> 고객님과 가장 가까운 매장을 찾는 중입니다...
         </p>
-        
         <div id="branch-result" style="display: none;">
             <div id="store-name" style="font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 10px;"></div>
             <div id="store-address" style="font-size: 15px; color: #aaa; margin-bottom: 8px;"></div>
@@ -65,10 +56,9 @@ HTML
                 카카오맵으로 길찾기 <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>
             </a>
         </div>
-        
         <div id="branch-default" style="display: none;">
             <div style="color: #aaa; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
-                현재 고객님 계신 곳 주변의 대리점 검색이 원활하지 않습니다.<br>본점 대표번호로 문의해 주시면 친절하게 안내해 드리겠습니다.
+                현재 고객님 계신 곳 주변의 대리점 검색이 원활하지 않습니다.<br>본점 대표번호로 문의해 주시면 가장 가까운 매장을 친절하게 안내해 드리겠습니다.
             </div>
             <div style="font-size: 18px; color: var(--gold); font-weight: 700;">본점 대표번호 : 1588-0000</div>
         </div>
@@ -77,25 +67,18 @@ HTML
     <a href="index.html" class="btn-home">메인으로 돌아가기</a>
 
     <script>
-        // =========================================================
-        // PART 1. 매트리스 추천 알고리즘 
-        // =========================================================
         const rawCore = localStorage.getItem('userCore') || 'spring';
         const userCore = (rawCore.includes('폼') || rawCore.toLowerCase().includes('foam')) ? 'foam' : 'spring';
-
         const rawZone = localStorage.getItem('userZone');
         let userZone = ""; 
         if (rawZone && rawZone.includes('7')) userZone = '7zone';
         else if (rawZone && (rawZone.includes('5') || rawZone.includes('일반'))) userZone = 'normal';
-
         const rawInner = localStorage.getItem('userInner') || 'memory';
         const userInner = (rawInner.includes('메모리') || rawInner.toLowerCase().includes('memory')) ? 'memory' : rawInner;
-
         const rawFabric = localStorage.getItem('userFabric') || 'viscose';
         let userFabric = 'viscose';
         if (rawFabric.includes('텐셀') || rawFabric.toLowerCase().includes('tencel')) userFabric = 'tencel';
         if (rawFabric.includes('윈터') || rawFabric.toLowerCase().includes('winter')) userFabric = 'winter';
-
         const rawTension = localStorage.getItem('userTension') || "3";
         let userTension = 3; 
         if (rawTension.includes('1') || rawTension.includes('하드')) userTension = 1;
@@ -136,9 +119,6 @@ HTML
         document.getElementById('res-tags').innerText = bestMatch.tags;
         document.getElementById('res-desc').innerText = bestMatch.desc;
 
-        // =========================================================
-        // PART 2. 매장 GPS 매칭 및 디버깅 추적 시스템
-        // =========================================================
         const branches = [
             { name: "광주 아르마니 가구", address: "광주광역시 서구 하남대로 568", phone: "전화번호 등록 필요", lat: 35.1687, lng: 126.8776 },
             { name: "강릉 아르마니 가구", address: "강원특별자치도 강릉시 공항길 20", phone: "전화번호 등록 필요", lat: 37.7518, lng: 128.8760 },
@@ -201,52 +181,56 @@ HTML
 
         function findNearestBranch() {
             const userRegion = localStorage.getItem('userRegion') || '';
-            console.log("👉 [1단계] contact에서 넘어온 주소 확인:", userRegion);
-
             if (!userRegion) {
-                console.warn("⚠️ 주소 데이터가 비어있습니다.");
                 document.getElementById('branch-loading').style.display = 'none';
                 document.getElementById('branch-default').style.display = 'block';
                 return;
             }
 
-            try {
-                const geocoder = new kakao.maps.services.Geocoder();
-                console.log("👉 [2단계] 카카오 지오코더 엔진 정상 실행됨");
+            const geocoder = new kakao.maps.services.Geocoder();
 
-                geocoder.addressSearch(userRegion, function(result, status) {
-                    console.log("👉 [3단계] 1차 검색 상태 코드:", status);
-                    
-                    if (status === kakao.maps.services.Status.OK) {
-                        console.log("✅ 1차 검색 성공! 좌표:", result[0].y, result[0].x);
-                        renderNearestBranch(result[0].y, result[0].x);
-                    } else {
-                        const broadAddress = userRegion.split(' ').slice(0, 3).join(' '); 
-                        console.log("⚠️ 1차 검색 실패. 2차 넓은 검색 시도:", broadAddress);
-                        
-                        geocoder.addressSearch(broadAddress, function(result2, status2) {
-                            console.log("👉 [4단계] 2차 검색 상태 코드:", status2);
-                            if (status2 === kakao.maps.services.Status.OK) {
-                                console.log("✅ 2차 검색 성공! 좌표:", result2[0].y, result2[0].x);
-                                renderNearestBranch(result2[0].y, result2[0].x);
-                            } else {
-                                console.error("❌ 모든 검색 실패. 방어막 실행");
-                                document.getElementById('branch-loading').style.display = 'none';
-                                document.getElementById('branch-default').style.display = 'block';
-                            }
-                        });
-                    }
-                });
-            } catch(e) {
-                console.error("❌ 카카오 스크립트 에러 발생:", e);
-                document.getElementById('branch-loading').style.display = 'none';
-                document.getElementById('branch-default').style.display = 'block';
-            }
+            geocoder.addressSearch(userRegion, function(result, status) {
+                if (status === kakao.maps.services.Status.OK) {
+                    renderNearestBranch(result[0].y, result[0].x);
+                } else {
+                    const broadAddress = userRegion.split(' ').slice(0, 3).join(' '); 
+                    geocoder.addressSearch(broadAddress, function(result2, status2) {
+                        if (status2 === kakao.maps.services.Status.OK) {
+                            renderNearestBranch(result2[0].y, result2[0].x);
+                        } else {
+                            document.getElementById('branch-loading').style.display = 'none';
+                            document.getElementById('branch-default').style.display = 'block';
+                        }
+                    });
+                }
+            });
         }
 
-        // 카카오 스크립트가 안전하게 켜진 후 0.5초 뒤에 매장 찾기 실행
+        // 💡 100% 확실한 원인 판별용 방어 코드
         window.addEventListener('load', function() {
-            setTimeout(findNearestBranch, 500);
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey=1d6c234ef003c46b24def00a44ac1124&libraries=services&autoload=false";
+            
+            script.onload = function() {
+                try {
+                    kakao.maps.load(function() {
+                        findNearestBranch();
+                    });
+                } catch(e) {
+                    alert("⚠️ 에러: 카카오 스크립트는 불러왔지만 실행되지 못했습니다.");
+                }
+            };
+            
+            // 🔥 이 부분이 핵심입니다! 카카오 서버가 연결을 차단하면 이 알림창이 화면에 뜹니다!
+            script.onerror = function() {
+                alert("🚨 카카오 서버 통신 거절 🚨\n\n카카오 서버가 웹사이트를 불법으로 간주하고 스크립트 전송을 막았습니다.\n\n[해결 방법]\n1. 발급받은 키가 'JavaScript 키'가 맞는지 확인 (REST API 키는 작동 안 됨)\n2. 카카오 플랫폼 도메인 설정에 띄어쓰기(공백) 오타 확인");
+                
+                document.getElementById('branch-loading').style.display = 'none';
+                document.getElementById('branch-default').style.display = 'block';
+            };
+
+            document.head.appendChild(script);
         });
     </script>
 </body>
