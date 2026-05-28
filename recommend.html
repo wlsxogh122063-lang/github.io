@@ -58,7 +58,7 @@ HTML
         </div>
         <div id="branch-default" style="display: none;">
             <div style="color: #aaa; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
-                현재 접속하신 환경에서 매장 검색이 원활하지 않습니다.<br>본점 대표번호로 문의해 주시면 친절하게 안내해 드리겠습니다.
+                현재 접속하신 환경에서 매장 검색 통신이 차단되었습니다.<br>본점 대표번호로 문의해 주시면 친절하게 안내해 드리겠습니다.
             </div>
             <div style="font-size: 18px; color: var(--gold); font-weight: 700;">본점 대표번호 : 1588-0000</div>
         </div>
@@ -170,51 +170,56 @@ HTML
             document.getElementById('branch-result').style.display = 'block';
         }
 
+        function fetchKakaoAddress(address) {
+            const restApiKey = '293f5cbb03a83a9feffe2ad6d80cdd30';
+            const url = `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(address)}`;
+
+            return fetch(url, {
+                method: 'GET',
+                headers: { 'Authorization': `KakaoAK ${restApiKey}` }
+            }).then(res => {
+                if (!res.ok) {
+                    // 카카오가 튕겨냈을 때의 정확한 에러 코드를 뽑아냅니다.
+                    return res.text().then(text => { throw new Error(`HTTP ${res.status} 에러\n${text}`); });
+                }
+                return res.json();
+            });
+        }
+
         function findNearestBranch() {
             const userRegion = localStorage.getItem('userRegion') || '';
             if (!userRegion) {
+                alert("🚨 앞 페이지에서 주소 데이터가 넘어오지 않았습니다!");
                 document.getElementById('branch-loading').style.display = 'none';
                 document.getElementById('branch-default').style.display = 'block';
                 return;
             }
 
-            const geocoder = new kakao.maps.services.Geocoder();
-            geocoder.addressSearch(userRegion, function(result, status) {
-                if (status === kakao.maps.services.Status.OK) {
-                    renderNearestBranch(result[0].y, result[0].x);
+            fetchKakaoAddress(userRegion).then(data => {
+                if (data.documents && data.documents.length > 0) {
+                    renderNearestBranch(data.documents[0].y, data.documents[0].x);
                 } else {
-                    const broadAddress = userRegion.split(' ').slice(0, 3).join(' '); 
-                    geocoder.addressSearch(broadAddress, function(result2, status2) {
-                        if (status2 === kakao.maps.services.Status.OK) {
-                            renderNearestBranch(result2[0].y, result2[0].x);
+                    const broadAddress = userRegion.split(' ').slice(0, 3).join(' ');
+                    fetchKakaoAddress(broadAddress).then(data2 => {
+                        if (data2.documents && data2.documents.length > 0) {
+                            renderNearestBranch(data2.documents[0].y, data2.documents[0].x);
                         } else {
                             document.getElementById('branch-loading').style.display = 'none';
                             document.getElementById('branch-default').style.display = 'block';
                         }
-                    });
+                    }).catch(error => { throw error; });
                 }
+            }).catch(error => {
+                // 🔥 화면에 강력한 알림창을 띄워 에러 원인을 적나라하게 보여줍니다!
+                alert("🚨 카카오 통신 차단됨 🚨\n\n이유: " + error.message + "\n\n※ 주소창이 file:/// 로 시작하면 100% 차단됩니다.");
+                document.getElementById('branch-loading').style.display = 'none';
+                document.getElementById('branch-default').style.display = 'block';
             });
         }
 
-        // 💡 카카오 스크립트 자동 생성 및 실행 엔진
-        function initKakaoMap() {
-            const script = document.createElement('script');
-            script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey=1d6c234ef003c46b24def00a44ac1124&libraries=services&autoload=false";
-            document.head.appendChild(script);
-
-            script.onload = function() {
-                kakao.maps.load(function() {
-                    findNearestBranch();
-                });
-            };
-            
-            script.onerror = function() {
-                document.getElementById('branch-loading').style.display = 'none';
-                document.getElementById('branch-default').style.display = 'block';
-            };
-        }
-
-        window.onload = initKakaoMap;
+        window.onload = function() {
+            setTimeout(findNearestBranch, 500);
+        };
     </script>
 </body>
 </html>
